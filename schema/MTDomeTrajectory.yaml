@@ -1,0 +1,42 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://github.com/lsst-ts/ts_MTDomeTrajectory/blob/master/schema/MTDomeTrajectory.yaml
+# title must end with one or more spaces followed by the schema version, which must begin with "v"
+title: MTDomeTrajectory v1
+description: Schema for MTDomeTrajectory configuration files
+type: object
+properties:
+  algorithm_name:
+    type: string
+    enum:
+    - simple
+    default: simple
+  algorithm_config:
+    type: object
+allOf:
+# For each supported algorithm_name add a new if/then case below.
+# Warning: set the default values for each case at the algorithm_config level
+# (rather than deeper down on properties within algorithm_config),
+# so users can omit algorithm_config and still get proper defaults.
+- if:
+    properties:
+      algorithm_name:
+        const: simple
+  then:
+    properties:
+      algorithm_config:
+        properties:
+          max_delta_elevation:
+            type: number
+            description: Maximum difference between dome and telescope elevation before vignetting (deg)
+          max_delta_azimuth:
+            type: number
+            description: Maximum difference between dome and telescope azimuth before vignetting (deg)
+        required:
+        - max_delta_elevation
+        - max_delta_azimuth
+        default:
+          max_delta_elevation: 6
+          max_delta_azimuth: 5
+        additionalProperties: false
+additionalProperties: false
+
