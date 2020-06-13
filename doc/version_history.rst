@@ -5,3 +5,15 @@
 ###############
 Version History
 ###############
+
+v0.1.0
+======
+Initial version.
+
+Requirements:
+
+* Dome
+* ts_salobj 5.15
+* ts_simactuators 2
+* IDL files for MTDomeTrajectory and Dome
+
