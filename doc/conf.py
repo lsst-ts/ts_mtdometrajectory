@@ -11,6 +11,6 @@ _g = globals()
 _g.update(
     build_package_configs(
         project_name="ts_MTDomeTrajectory",
-        version=lsst.ts.MTDomeTrajectory.version.__version__,
+        version=lsst.ts.MTDomeTrajectory.__version__,
     )
 )
