@@ -1,0 +1,4 @@
+algorithm_name: "simple"
+algorithm_config:
+    max_delta_elevation: 6  # degrees
+    max_delta_azimuth: 5  # degrees

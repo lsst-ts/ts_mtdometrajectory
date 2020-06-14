@@ -25,18 +25,18 @@ allOf:
     properties:
       algorithm_config:
         properties:
-          max_delta_elevation:
-            type: number
-            description: Maximum difference between dome and telescope elevation before vignetting (deg)
           max_delta_azimuth:
             type: number
             description: Maximum difference between dome and telescope azimuth before vignetting (deg)
+          max_delta_elevation:
+            type: number
+            description: Maximum difference between dome and telescope elevation before vignetting (deg)
         required:
-        - max_delta_elevation
         - max_delta_azimuth
+        - max_delta_elevation
         default:
-          max_delta_elevation: 6
           max_delta_azimuth: 5
+          max_delta_elevation: 6
         additionalProperties: false
 additionalProperties: false
 
