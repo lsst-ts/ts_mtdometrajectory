@@ -1,6 +1,7 @@
+#!/usr/bin/env python
 # This file is part of ts_MTDomeTrajectory.
 #
-# Developed for the LSST Data Management System.
+# Developed for the LSST Telescope and Site Systems.
 # This product includes software developed by the LSST Project
 # (https://www.lsst.org).
 # See the COPYRIGHT file at the top-level directory of this distribution
@@ -18,14 +19,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import asyncio
 
-from .elevation_azimuth import *
-from .base_algorithm import *
-from .simple_algorithm import *
-from .dome_trajectory import *
-from .mock_dome import *
+from lsst.ts import MTDomeTrajectory
 
-try:
-    from .version import *
-except ImportError:
-    __version__ = "?"
+asyncio.run(MTDomeTrajectory.MTDomeTrajectory.amain(index=None))

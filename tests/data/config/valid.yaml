@@ -1,0 +1,4 @@
+algorithm_name: "simple"
+algorithm_config:
+  max_delta_azimuth: 7.1
+  max_delta_elevation: 5.5
