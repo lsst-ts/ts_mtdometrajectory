@@ -69,7 +69,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
         )
 
     async def test_bin_script(self):
-        """Test that run_atdometrajectory.py runs the CSC.
+        """Test that run_mtdometrajectory.py runs the CSC.
         """
         await self.check_bin_script(
             name="MTDomeTrajectory", index=None, exe_name="run_mtdometrajectory.py",
