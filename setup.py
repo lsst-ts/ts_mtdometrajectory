@@ -30,7 +30,7 @@ setuptools.setup(
     data_files=[
         (os.path.join(data_files_path, "schema"), ["schema/MTDomeTrajectory.yaml"])
     ],
-    scripts=["bin/run_atdometrajectory.py"],
+    scripts=["bin/run_mtdometrajectory.py"],
     tests_require=tests_require,
     extras_require={"dev": dev_requires},
     license="GPL",

@@ -4,7 +4,7 @@ ts_MTDomeTrajectory
 
 ``ts_MTDomeTrajectory`` is a Commandable SAL Component (CSC) to make the dome for the Rubin Observatory Simonyi Survey Telescope dome track the telescope.
 
-`Documentation <https://ts-atdometrajectory.lsst.io>`_
+`Documentation <https://ts-mtdometrajectory.lsst.io>`_
 
 The package is compatible with ``setuptools``, as well as the `eups <https://github.com/RobertLuptonTheGood/eups>`_ package management system and ``scons`` build system.
 Assuming you have the basic Vera C. Rubin LSST DM stack installed you can do the following, from within the package directory:
