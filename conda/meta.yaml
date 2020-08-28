@@ -15,7 +15,7 @@ build:
     - OSPL_HOME
     - PYTHON_BUILD_VERSION
     - PYTHON_BUILD_LOCATION
-    - TS_CONFIG_ATTCS_DIR
+    - TS_CONFIG_MTTCS_DIR
     - LSST_DDS_DOMAIN
 
 test:
@@ -33,6 +33,8 @@ test:
     - ts-dds
     - ts-idl
     - ts-salobj
+    - ts-simactuators
+    - black
   source_files:
     - python
     - bin
@@ -54,3 +56,4 @@ requirements:
     - setuptools
     - setuptools_scm
     - ts-salobj
+    - ts-simactuators
