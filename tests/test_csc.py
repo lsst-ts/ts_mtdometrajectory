@@ -20,6 +20,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import asyncio
+import logging
 import math
 import os
 import pathlib
@@ -31,6 +32,10 @@ import yaml
 from lsst.ts.idl.enums import Dome
 from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
+
+logging.basicConfig()
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 STD_TIMEOUT = 30  # standard command timeout (sec)
 TEST_CONFIG_DIR = pathlib.Path(__file__).parents[1].joinpath("tests", "data", "config")
@@ -286,6 +291,16 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             f"wait_dome_done={wait_dome_done}"
         )
         self.assertTrue(move_azimuth or move_elevation)
+
+        # Wait until the dome is ready to receive a new MTMount target.
+        await asyncio.wait_for(
+            asyncio.gather(
+                self.csc.move_dome_elevation_task, self.csc.move_dome_azimuth_task
+            ),
+            timeout=STD_TIMEOUT,
+        )
+
+        # Is the dome moving?
         elevation_was_moving = self.dome_is_moving(self.dome_remote.evt_elMotion)
         azimuth_was_moving = self.dome_is_moving(self.dome_remote.evt_azMotion)
 
@@ -340,12 +355,6 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
                 )
             if move_azimuth and move_elevation:
                 await self.check_null_moves()
-        else:
-            # Wait for MTDomeTrajectory's elevation and azimuth tasks,
-            # so the next target will reliably induce motion.
-            await asyncio.gather(
-                self.csc.move_dome_elevation_task, self.csc.move_dome_azimuth_task
-            )
 
     def dome_is_moving(self, event):
         """Return True if the dome axis is MOVING, false if STOPPED
@@ -353,7 +362,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
         Raise an exception for any other value.
         """
-        data = self.dome_remote.evt_azMotion.get()
+        data = event.get(flush=False)
         if data is None:
             return False
         if data.state == Dome.MotionState.MOVING:

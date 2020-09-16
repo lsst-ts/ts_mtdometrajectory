@@ -115,7 +115,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def get_dome_target_elevation(self):
         """Get the current dome elevation target.
         """
-        target = self.dome_remote.evt_elTarget.get()
+        target = self.dome_remote.evt_elTarget.get(flush=False)
         if target is None:
             return None
         if math.isnan(target.position):
@@ -129,7 +129,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def get_dome_target_azimuth(self):
         """Get the current dome azimuth target.
         """
-        target = self.dome_remote.evt_azTarget.get()
+        target = self.dome_remote.evt_azTarget.get(flush=False)
         if target is None:
             return None
         if math.isnan(target.position):
@@ -197,8 +197,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             return
         moved_elevation = False
         moved_azimuth = False
-        dome_az_motion_state = self.dome_remote.evt_azMotion.get()
-        dome_el_motion_state = self.dome_remote.evt_elMotion.get()
+        dome_az_motion_state = self.dome_remote.evt_azMotion.get(flush=False)
+        dome_el_motion_state = self.dome_remote.evt_elMotion.get(flush=False)
         if None in (dome_el_motion_state, dome_az_motion_state):
             # We don't know enough about the dome yet
             return
@@ -253,8 +253,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             Desired dome elevation. The velocity is ignored.
         """
         try:
-            flushed_motion_event = False
-            dome_el_motion_state = self.dome_remote.evt_elMotion.get()
+            dome_el_motion_state = self.dome_remote.evt_elMotion.get(flush=True)
             if dome_el_motion_state is None:
                 self.log.warning("No data for Dome elMotion event; not moving the dome")
                 return
@@ -262,9 +261,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             # Stop the dome elevation axis, if moving, and wait for it to stop,
             # since the dome does not allow one move to supersede another.
             if dome_el_motion_state.state == Dome.MotionState.MOVING:
-                self.log.info("Stop existing dome elevation move.")
+                self.log.info("Stop existing dome elevation motion")
                 self.dome_remote.evt_elMotion.flush()
-                flushed_motion_event = True
                 await self.dome_remote.cmd_stopEl.start(timeout=STD_TIMEOUT)
 
                 while dome_el_motion_state.state != Dome.MotionState.STOPPED:
@@ -274,15 +272,12 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
 
             # Move the dome elevation axis and wait for the target event
             # and the first motion event (so motion has started).
-            self.log.debug("Move dome elevation")
-            if not flushed_motion_event:
-                self.dome_remote.evt_elMotion.flush()
             self.dome_remote.evt_elTarget.flush()
+            self.log.debug("Start a dome elevation move")
             await self.dome_remote.cmd_moveEl.set_start(
                 position=desired_dome_elevation.position, timeout=STD_TIMEOUT,
             )
-            await self.dome_remote.evt_elMotion.next(flush=False)
-            await self.dome_remote.evt_elTarget.next(flush=False)
+            await self.dome_remote.evt_elTarget.next(flush=False, timeout=STD_TIMEOUT)
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -301,8 +296,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             Desired dome azimuth.
         """
         try:
-            flushed_motion_event = False
-            dome_az_motion_state = self.dome_remote.evt_azMotion.get()
+            dome_az_motion_state = self.dome_remote.evt_azMotion.get(flush=True)
             if dome_az_motion_state is None:
                 self.log.warning(
                     "No data for the Dome azMotion event; not moving the dome"
@@ -312,9 +306,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             # Stop the dome azimuth axis, if moving, and wait for it to stop,
             # since the dome does not allow one move to supersede another.
             if dome_az_motion_state.state == Dome.MotionState.MOVING:
-                self.log.info("Stop existing dome azimuth move.")
                 self.dome_remote.evt_azMotion.flush()
-                flushed_motion_event = True
+                self.log.info("Stop existing dome azimuth motion")
                 await self.dome_remote.cmd_stopAz.start(timeout=STD_TIMEOUT)
 
                 while dome_az_motion_state.state != Dome.MotionState.STOPPED:
@@ -324,17 +317,14 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
 
             # Move the dome azimuth axis and wait for the target event
             # and the first motion event (so motion has started).
-            self.log.debug("Move dome azimuth.")
-            if not flushed_motion_event:
-                self.dome_remote.evt_azMotion.flush()
             self.dome_remote.evt_azTarget.flush()
+            self.log.debug("Start a dome azimuth move")
             await self.dome_remote.cmd_moveAz.set_start(
                 position=desired_dome_azimuth.position,
                 velocity=desired_dome_azimuth.velocity,
                 timeout=STD_TIMEOUT,
             )
-            await self.dome_remote.evt_azMotion.next(flush=False)
-            await self.dome_remote.evt_azTarget.next(flush=False)
+            await self.dome_remote.evt_azTarget.next(flush=False, timeout=STD_TIMEOUT)
         except asyncio.CancelledError:
             raise
         except Exception:
