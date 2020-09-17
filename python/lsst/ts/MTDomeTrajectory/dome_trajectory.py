@@ -54,26 +54,12 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         The initial state of the CSC. Typically one of:
         - State.ENABLED if you want the CSC immediately usable.
         - State.STANDBY if you want full emulation of a CSC.
-    simulation_mode : `int` (optional)
-        Simulation mode. This is provided for unit testing,
-        as real CSCs should start up not simulating, the default.
-
-    Notes
-    -----
-    **Simulation Modes**
-
-    Supported simulation modes:
-
-    * 0: regular operation
-    * 1: simulation mode: start a mock Dome controller and talk to it
-      using SAL.
     """
 
+    valid_simulation_modes = [0]
+
     def __init__(
-        self,
-        config_dir=None,
-        initial_state=salobj.base_csc.State.STANDBY,
-        simulation_mode=0,
+        self, config_dir=None, initial_state=salobj.base_csc.State.STANDBY,
     ):
         schema_path = (
             pathlib.Path(__file__)
@@ -86,7 +72,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             config_dir=config_dir,
             index=None,
             initial_state=initial_state,
-            simulation_mode=simulation_mode,
+            simulation_mode=0,
         )
 
         # Telescope target, from the NewMTMount target event;

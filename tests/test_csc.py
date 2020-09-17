@@ -57,15 +57,14 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
     def basic_make_csc(
         self, initial_state, config_dir, simulation_mode, initial_elevation=0
     ):
+        self.assertEqual(simulation_mode, 0)
         self.dome_csc = MTDomeTrajectory.MockDome(
             initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
         )
         self.dome_remote = salobj.Remote(domain=self.dome_csc.domain, name="Dome")
         self.newmtmount_controller = salobj.Controller("NewMTMount")
         return MTDomeTrajectory.MTDomeTrajectory(
-            initial_state=initial_state,
-            config_dir=config_dir,
-            simulation_mode=simulation_mode,
+            initial_state=initial_state, config_dir=config_dir,
         )
 
     async def test_bin_script(self):
@@ -101,7 +100,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
                 (
                     initial_elevation,
                     initial_azimuth
-                    + self.scaled_maz_delta_azimuth(initial_elevation)
+                    + self.scaled_max_delta_azimuth(initial_elevation)
                     + 0.001,
                     False,
                     True,
@@ -243,7 +242,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             self.csc.telescope_target.azimuth.position, expected_azimuth
         )
 
-    def scaled_maz_delta_azimuth(self, elevation):
+    def scaled_max_delta_azimuth(self, elevation):
         """max_delta_azimuth scaled by cos(elevation).
 
         Thus the minimum azimuth difference that will trigger a dome move
@@ -378,13 +377,13 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             (
                 min_elevation,
                 dome_target_azimuth.position
-                - self.scaled_maz_delta_azimuth(min_elevation)
+                - self.scaled_max_delta_azimuth(min_elevation)
                 + 0.001,
             ),
             (
                 max_elevation,
                 dome_target_azimuth.position
-                + self.scaled_maz_delta_azimuth(max_elevation)
+                + self.scaled_max_delta_azimuth(max_elevation)
                 - 0.001,
             ),
             (dome_target_elevation.position, dome_target_azimuth.position),

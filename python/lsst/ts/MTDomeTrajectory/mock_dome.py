@@ -53,6 +53,8 @@ class MockDome(salobj.BaseCsc):
         Maximum elevation velocity (deg/sec)
     """
 
+    valid_simulation_modes = [0]
+
     def __init__(
         self,
         initial_state,
