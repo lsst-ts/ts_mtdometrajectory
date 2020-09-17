@@ -53,6 +53,8 @@ class MockDome(salobj.BaseCsc):
         Maximum elevation velocity (deg/sec)
     """
 
+    valid_simulation_modes = [0]
+
     def __init__(
         self,
         initial_state,
@@ -130,7 +132,7 @@ class MockDome(salobj.BaseCsc):
         self.evt_elMotion.set_put(
             state=Dome.MotionState.MOVING, inPosition=False,
         )
-        self.evt_elTarget.set_put(position=data.position, velocity=0)
+        self.evt_elTarget.set_put(position=data.position, velocity=0, force_output=True)
         self.elevation_done_task = asyncio.create_task(
             self.report_elevation_done(
                 in_position=True, motion_state=Dome.MotionState.STOPPED
@@ -144,7 +146,9 @@ class MockDome(salobj.BaseCsc):
         self.azimuth_actuator.set_target(
             position=data.position, velocity=data.velocity, tai=salobj.current_tai(),
         )
-        self.evt_azTarget.set_put(position=data.position, velocity=data.velocity)
+        self.evt_azTarget.set_put(
+            position=data.position, velocity=data.velocity, force_output=True
+        )
         self.evt_azMotion.set_put(
             state=Dome.MotionState.MOVING, inPosition=False,
         )

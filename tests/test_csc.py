@@ -20,6 +20,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import asyncio
+import logging
 import math
 import os
 import pathlib
@@ -31,6 +32,10 @@ import yaml
 from lsst.ts.idl.enums import Dome
 from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
+
+logging.basicConfig()
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 STD_TIMEOUT = 30  # standard command timeout (sec)
 TEST_CONFIG_DIR = pathlib.Path(__file__).parents[1].joinpath("tests", "data", "config")
@@ -57,15 +62,14 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
     def basic_make_csc(
         self, initial_state, config_dir, simulation_mode, initial_elevation=0
     ):
+        self.assertEqual(simulation_mode, 0)
         self.dome_csc = MTDomeTrajectory.MockDome(
             initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
         )
         self.dome_remote = salobj.Remote(domain=self.dome_csc.domain, name="Dome")
         self.newmtmount_controller = salobj.Controller("NewMTMount")
         return MTDomeTrajectory.MTDomeTrajectory(
-            initial_state=initial_state,
-            config_dir=config_dir,
-            simulation_mode=simulation_mode,
+            initial_state=initial_state, config_dir=config_dir,
         )
 
     async def test_bin_script(self):
@@ -101,7 +105,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
                 (
                     initial_elevation,
                     initial_azimuth
-                    + self.scaled_maz_delta_azimuth(initial_elevation)
+                    + self.scaled_max_delta_azimuth(initial_elevation)
                     + 0.001,
                     False,
                     True,
@@ -243,7 +247,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             self.csc.telescope_target.azimuth.position, expected_azimuth
         )
 
-    def scaled_maz_delta_azimuth(self, elevation):
+    def scaled_max_delta_azimuth(self, elevation):
         """max_delta_azimuth scaled by cos(elevation).
 
         Thus the minimum azimuth difference that will trigger a dome move
@@ -287,6 +291,16 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             f"wait_dome_done={wait_dome_done}"
         )
         self.assertTrue(move_azimuth or move_elevation)
+
+        # Wait until the dome is ready to receive a new MTMount target.
+        await asyncio.wait_for(
+            asyncio.gather(
+                self.csc.move_dome_elevation_task, self.csc.move_dome_azimuth_task
+            ),
+            timeout=STD_TIMEOUT,
+        )
+
+        # Is the dome moving?
         elevation_was_moving = self.dome_is_moving(self.dome_remote.evt_elMotion)
         azimuth_was_moving = self.dome_is_moving(self.dome_remote.evt_azMotion)
 
@@ -341,12 +355,6 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
                 )
             if move_azimuth and move_elevation:
                 await self.check_null_moves()
-        else:
-            # Wait for MTDomeTrajectory's elevation and azimuth tasks,
-            # so the next target will reliably induce motion.
-            await asyncio.gather(
-                self.csc.move_dome_elevation_task, self.csc.move_dome_azimuth_task
-            )
 
     def dome_is_moving(self, event):
         """Return True if the dome axis is MOVING, false if STOPPED
@@ -354,7 +362,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
         Raise an exception for any other value.
         """
-        data = self.dome_remote.evt_azMotion.get()
+        data = event.get(flush=False)
         if data is None:
             return False
         if data.state == Dome.MotionState.MOVING:
@@ -378,13 +386,13 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             (
                 min_elevation,
                 dome_target_azimuth.position
-                - self.scaled_maz_delta_azimuth(min_elevation)
+                - self.scaled_max_delta_azimuth(min_elevation)
                 + 0.001,
             ),
             (
                 max_elevation,
                 dome_target_azimuth.position
-                + self.scaled_maz_delta_azimuth(max_elevation)
+                + self.scaled_max_delta_azimuth(max_elevation)
                 - 0.001,
             ),
             (dome_target_elevation.position, dome_target_azimuth.position),
