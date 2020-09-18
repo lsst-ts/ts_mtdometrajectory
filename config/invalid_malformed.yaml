@@ -1,6 +1,0 @@
-# This config file exists purely for unit testing
-# Format error: `algorithm_name =` instead of `algorithm_name:`
-algorithm_name = "simple"
-algorithm_config:
-    max_delta_elevation: 6  # degrees
-    max_delta_azimuth: 5  # degrees
