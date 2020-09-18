@@ -253,7 +253,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             Desired dome elevation. The velocity is ignored.
         """
         try:
-            dome_el_motion_state = self.dome_remote.evt_elMotion.get(flush=True)
+            dome_el_motion_state = self.dome_remote.evt_elMotion.get(flush=False)
             if dome_el_motion_state is None:
                 self.log.warning("No data for Dome elMotion event; not moving the dome")
                 return
@@ -296,7 +296,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             Desired dome azimuth.
         """
         try:
-            dome_az_motion_state = self.dome_remote.evt_azMotion.get(flush=True)
+            dome_az_motion_state = self.dome_remote.evt_azMotion.get(flush=False)
             if dome_az_motion_state is None:
                 self.log.warning(
                     "No data for the Dome azMotion event; not moving the dome"
