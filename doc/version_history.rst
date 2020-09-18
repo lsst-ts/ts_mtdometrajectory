@@ -6,6 +6,21 @@
 Version History
 ###############
 
+v0.1.3
+======
+
+Changes:
+
+* Modernized the documentation.
+* Use `lsst.ts.salobj.topics.ReadTopic.get(flush=False)` everywhere, to avoid deprecation warnings from ts_salobj.
+
+Requires:
+
+* Dome
+* ts_salobj 5.15
+* ts_simactuators 2
+* IDL files for MTDomeTrajectory and Dome
+
 v0.1.2
 ======
 
