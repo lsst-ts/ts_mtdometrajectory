@@ -27,10 +27,14 @@ allOf:
         properties:
           max_delta_azimuth:
             type: number
-            description: Maximum difference between dome and telescope azimuth before vignetting (deg)
+            description: ->
+              Maximum difference between dome and telescope azimuth before vignetting (deg).
+              The default value is maximum error before the dome vignettes the telescope.
           max_delta_elevation:
             type: number
-            description: Maximum difference between dome and telescope elevation before vignetting (deg)
+            description: ->
+              Maximum difference between dome and telescope elevation before vignetting (deg)
+              The default value is maximum error before the dome vignettes the telescope.
         required:
         - max_delta_azimuth
         - max_delta_elevation
