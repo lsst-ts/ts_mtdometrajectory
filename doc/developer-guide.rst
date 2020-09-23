@@ -16,8 +16,8 @@ API
 The primary classes are:
 
 * `MTDomeTrajectory`: the CSC.
-* `BaseAlgorithm`: base class for following algorithms.
-* `SimpleAlgorithm`: a simple following algorithm.
+* `BaseAlgorithm`: base class for motion algorithms.
+* `SimpleAlgorithm`: a simple motion algorithm.
 
 .. automodapi:: lsst.ts.MTDomeTrajectory
    :no-main-docstr:

@@ -37,7 +37,7 @@ class SimpleAlgorithm(base_algorithm.BaseAlgorithm):
     position is larger than the configured maximum, then command dome
     elevation/azimuth position = telescope_target elevation/azimuth position
     and zero velocity. Otherwise don't move the dome in elevation/azimuth.
-    Note that the test and is applied separately for elevation and azimuth,
+    Note that the test is applied independently for elevation and azimuth,
     so the dome may be commanded in elevation or azimuth or both.
     """
 
