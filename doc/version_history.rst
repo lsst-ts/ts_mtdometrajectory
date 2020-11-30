@@ -6,6 +6,21 @@
 Version History
 ###############
 
+v0.2.1
+======
+
+Changes:
+
+* Update Jenkinsfile.conda to use the shared library.
+* Pin the versions of ts_idl and ts_salobj in conda/meta.yaml.
+
+Requires:
+
+* MTDome
+* ts_salobj 5.15
+* ts_simactuators 2
+* IDL files for MTDomeTrajectory and MTDome
+
 v0.2.0
 ======
 
