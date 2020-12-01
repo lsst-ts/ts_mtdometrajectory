@@ -29,7 +29,7 @@ import unittest
 import asynctest
 import yaml
 
-from lsst.ts.idl.enums import Dome
+from lsst.ts.idl.enums import MTDome
 from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
 
@@ -66,7 +66,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
         self.dome_csc = MTDomeTrajectory.MockDome(
             initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
         )
-        self.dome_remote = salobj.Remote(domain=self.dome_csc.domain, name="Dome")
+        self.dome_remote = salobj.Remote(domain=self.dome_csc.domain, name="MTDome")
         self.newmtmount_controller = salobj.Controller("NewMTMount")
         return MTDomeTrajectory.MTDomeTrajectory(
             initial_state=initial_state, config_dir=config_dir,
@@ -93,10 +93,10 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
         ):
             await self.assert_next_sample(
-                self.dome_remote.evt_azMotion, state=Dome.MotionState.STOPPED
+                self.dome_remote.evt_azMotion, state=MTDome.MotionState.STOPPED
             )
             await self.assert_next_sample(
-                self.dome_remote.evt_elMotion, state=Dome.MotionState.STOPPED
+                self.dome_remote.evt_elMotion, state=MTDome.MotionState.STOPPED
             )
             min_del_to_move = self.csc.algorithm.max_delta_elevation
             initial_azimuth = 0
@@ -317,11 +317,11 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
         def expected_states(was_moving):
             if was_moving:
                 return [
-                    Dome.MotionState.STOPPING,
-                    Dome.MotionState.STOPPED,
-                    Dome.MotionState.MOVING,
+                    MTDome.MotionState.STOPPING,
+                    MTDome.MotionState.STOPPED,
+                    MTDome.MotionState.MOVING,
                 ]
-            return [Dome.MotionState.MOVING]
+            return [MTDome.MotionState.MOVING]
 
         if move_azimuth:
             for azimuth_state in expected_states(was_moving=azimuth_was_moving):
@@ -365,9 +365,9 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
         data = event.get(flush=False)
         if data is None:
             return False
-        if data.state == Dome.MotionState.MOVING:
+        if data.state == MTDome.MotionState.MOVING:
             return True
-        if data.state == Dome.MotionState.STOPPED:
+        if data.state == MTDome.MotionState.STOPPED:
             return False
         self.fail(f"Unexpected {event} state {data.state}")
 

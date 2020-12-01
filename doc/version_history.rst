@@ -6,6 +6,20 @@
 Version History
 ###############
 
+v0.2.0
+======
+
+Changes:
+
+* Implement renaming of Dome component to MTDome.
+
+Requires:
+
+* MTDome
+* ts_salobj 5.15
+* ts_simactuators 2
+* IDL files for MTDomeTrajectory and MTDome
+
 v0.1.4
 ======
 

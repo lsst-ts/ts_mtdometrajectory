@@ -23,7 +23,7 @@ import unittest
 
 import asynctest
 
-from lsst.ts.idl.enums import Dome
+from lsst.ts.idl.enums import MTDome
 from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
 
@@ -47,12 +47,12 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=False,
             )
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=False,
             )
 
@@ -76,7 +76,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=False,
             )
 
@@ -97,7 +97,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.MOVING,
+                state=MTDome.MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_azTarget)
@@ -137,7 +137,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             # Wait for the move to finish.
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.CRAWLING,
+                state=MTDome.MotionState.CRAWLING,
                 inPosition=True,
             )
 
@@ -149,14 +149,14 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             )
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.MOVING,
+                state=MTDome.MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_azTarget, velocity=0)
             self.assertAlmostEqual(data.position, position2)
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=True,
             )
 
@@ -167,7 +167,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=False,
             )
 
@@ -185,7 +185,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.MOVING,
+                state=MTDome.MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
@@ -207,7 +207,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             # Wait for the move to finish.
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=True,
             )
 
@@ -218,14 +218,14 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             )
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.MOVING,
+                state=MTDome.MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
             self.assertAlmostEqual(data.position, position2)
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=True,
             )
 
@@ -236,7 +236,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=False,
             )
 
@@ -248,7 +248,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.MOVING,
+                state=MTDome.MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_azTarget)
@@ -258,12 +258,12 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             await self.remote.cmd_stopAz.start(timeout=STD_TIMEOUT)
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.STOPPING,
+                state=MTDome.MotionState.STOPPING,
                 inPosition=False,
             )
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=False,
             )
 
@@ -274,7 +274,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=False,
             )
 
@@ -285,7 +285,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.MOVING,
+                state=MTDome.MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
@@ -294,12 +294,12 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             await self.remote.cmd_stopEl.start(timeout=STD_TIMEOUT)
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.STOPPING,
+                state=MTDome.MotionState.STOPPING,
                 inPosition=False,
             )
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=Dome.MotionState.STOPPED,
+                state=MTDome.MotionState.STOPPED,
                 inPosition=False,
             )
 
