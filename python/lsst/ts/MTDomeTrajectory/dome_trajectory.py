@@ -27,7 +27,7 @@ import pathlib
 
 import yaml
 
-from lsst.ts.idl.enums import Dome
+from lsst.ts.idl.enums import MTDome
 from lsst.ts import salobj
 from lsst.ts import simactuators
 from .elevation_azimuth import ElevationAzimuth
@@ -102,7 +102,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         )
         self.dome_remote = salobj.Remote(
             domain=self.domain,
-            name="Dome",
+            name="MTDome",
             include=["azMotion", "azTarget", "elMotion", "elTarget"],
         )
 
@@ -260,12 +260,12 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
 
             # Stop the dome elevation axis, if moving, and wait for it to stop,
             # since the dome does not allow one move to supersede another.
-            if dome_el_motion_state.state == Dome.MotionState.MOVING:
+            if dome_el_motion_state.state == MTDome.MotionState.MOVING:
                 self.log.info("Stop existing dome elevation motion")
                 self.dome_remote.evt_elMotion.flush()
                 await self.dome_remote.cmd_stopEl.start(timeout=STD_TIMEOUT)
 
-                while dome_el_motion_state.state != Dome.MotionState.STOPPED:
+                while dome_el_motion_state.state != MTDome.MotionState.STOPPED:
                     dome_el_motion_state = await self.dome_remote.evt_elMotion.next(
                         flush=False
                     )
@@ -305,12 +305,12 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
 
             # Stop the dome azimuth axis, if moving, and wait for it to stop,
             # since the dome does not allow one move to supersede another.
-            if dome_az_motion_state.state == Dome.MotionState.MOVING:
+            if dome_az_motion_state.state == MTDome.MotionState.MOVING:
                 self.dome_remote.evt_azMotion.flush()
                 self.log.info("Stop existing dome azimuth motion")
                 await self.dome_remote.cmd_stopAz.start(timeout=STD_TIMEOUT)
 
-                while dome_az_motion_state.state != Dome.MotionState.STOPPED:
+                while dome_az_motion_state.state != MTDome.MotionState.STOPPED:
                     dome_az_motion_state = await self.dome_remote.evt_azMotion.next(
                         flush=False
                     )

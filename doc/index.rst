@@ -19,12 +19,12 @@ Overview
 ========
 
 MTDomeTrajectory moves the Simonyi Survey Telescope dome to follow the telescope.
-It does this by reading telescope position from the `MTMount CSC`_ and issuing commands to the `Dome CSC`_.
+It does this by reading telescope position from the `MTMount CSC`_ and issuing commands to the `MTDome CSC`_.
 
 Unlike most observatory enclosures, we plan to slowly rotate the dome during exposures, in order to minimize the time required to move to the next target.
 MTDomeTrajectory supports multiple algorithms for determining how to move the dome, though at present only one simple algorithm is available.
 
-.. _Dome CSC: https://ts-dome.lsst.io
+.. _MTDome CSC: https://ts-mtdome.lsst.io
 .. _MTMount CSC: https://ts-mtmount.lsst.io
 
 .. _lsst.ts.MTDomeTrajectory-user_guide:
@@ -47,7 +47,7 @@ To stop the dome from tracking the telescope (e.g. if you want to send the dome 
 MTDomeTrajectory supports multiple algorithms for moving the dome.
 The algorithm is specified in the :ref:`configuration <lsst.ts.MTDomeTrajectory-configuration>`.
 
-MTDomeTrajectory can be fully exercised without hardware by running the `MTMount CSC`_ and `Dome CSC`_ in simulation mode.
+MTDomeTrajectory can be fully exercised without hardware by running the `MTMount CSC`_ and `MTDome CSC`_ in simulation mode.
 Thus MTDomeTrajectory does not need or have a simulation mode of its own.
 
 
