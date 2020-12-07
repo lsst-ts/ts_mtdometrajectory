@@ -115,7 +115,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def get_dome_target_elevation(self):
         """Get the current dome elevation target.
         """
-        target = self.dome_remote.evt_elTarget.get(flush=False)
+        target = self.dome_remote.evt_elTarget.get()
         if target is None:
             return None
         if math.isnan(target.position):
@@ -129,7 +129,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def get_dome_target_azimuth(self):
         """Get the current dome azimuth target.
         """
-        target = self.dome_remote.evt_azTarget.get(flush=False)
+        target = self.dome_remote.evt_azTarget.get()
         if target is None:
             return None
         if math.isnan(target.position):
@@ -197,13 +197,11 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             return
         moved_elevation = False
         moved_azimuth = False
-        dome_az_motion_state = self.dome_remote.evt_azMotion.get(flush=False)
-        dome_el_motion_state = self.dome_remote.evt_elMotion.get(flush=False)
-        if None in (dome_el_motion_state, dome_az_motion_state):
-            # We don't know enough about the dome yet
-            return
 
-        if self.move_dome_elevation_task.done():
+        if (
+            self.move_dome_elevation_task.done()
+            and self.dome_remote.evt_elMotion.has_data
+        ):
             dome_target_elevation = self.get_dome_target_elevation()
             desired_dome_elevation = self.algorithm.desired_dome_elevation(
                 dome_target_elevation=dome_target_elevation,
@@ -216,7 +214,10 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                     self.move_dome_elevation(desired_dome_elevation)
                 )
 
-        if self.move_dome_azimuth_task.done():
+        if (
+            self.move_dome_azimuth_task.done()
+            and self.dome_remote.evt_azMotion.has_data
+        ):
             dome_target_azimuth = self.get_dome_target_azimuth()
             desired_dome_azimuth = self.algorithm.desired_dome_azimuth(
                 dome_target_azimuth=dome_target_azimuth,
@@ -247,13 +248,15 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         Wait until the dome has reported that it is moving,
         via the elMotion and elTarget events.
 
+        This will log a warning and return if evt_elMotion has no data.
+
         Parameters
         ----------
         desired_dome_elevation : `lsst.ts.simactuators.path.PathSegment`
             Desired dome elevation. The velocity is ignored.
         """
         try:
-            dome_el_motion_state = self.dome_remote.evt_elMotion.get(flush=False)
+            dome_el_motion_state = self.dome_remote.evt_elMotion.get()
             if dome_el_motion_state is None:
                 self.log.warning("No data for Dome elMotion event; not moving the dome")
                 return
@@ -290,13 +293,15 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         Wait until the dome has reported that it is moving,
         via the azMotion and azTarget events.
 
+        This will log a warning and return if evt_azMotion has no data.
+
         Parameters
         ----------
         desired_dome_azimuth : `lsst.ts.simactuators.path.PathSegment`
             Desired dome azimuth.
         """
         try:
-            dome_az_motion_state = self.dome_remote.evt_azMotion.get(flush=False)
+            dome_az_motion_state = self.dome_remote.evt_azMotion.get()
             if dome_az_motion_state is None:
                 self.log.warning(
                     "No data for the Dome azMotion event; not moving the dome"
