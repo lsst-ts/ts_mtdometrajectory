@@ -129,10 +129,10 @@ class MockDome(salobj.BaseCsc):
         if not self.elevation_done_task.done():
             raise salobj.ExpectedError("Elevation slew not done.")
         self.elevation_actuator.set_position(position=data.position)
+        self.evt_elTarget.set_put(position=data.position, velocity=0, force_output=True)
         self.evt_elMotion.set_put(
             state=MTDome.MotionState.MOVING, inPosition=False,
         )
-        self.evt_elTarget.set_put(position=data.position, velocity=0, force_output=True)
         self.elevation_done_task = asyncio.create_task(
             self.report_elevation_done(
                 in_position=True, motion_state=MTDome.MotionState.STOPPED
