@@ -73,7 +73,7 @@ Here is a sample configuration file that specifies all fields::
     # even if the default algorithm changes.
     algorithm_name: "simple"
     algorithm_config:
-      # These two values are abitrary and merely for illustration.
+      # These two values are arbitrary and merely for illustration.
       # Either or both can be omitted, and the defaults are reasonable.
       max_delta_azimuth: 3.5
       max_delta_elevation: 4
