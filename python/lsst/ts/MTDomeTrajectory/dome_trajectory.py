@@ -115,7 +115,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def get_dome_target_elevation(self):
         """Get the current dome elevation target.
         """
-        target = self.dome_remote.evt_elTarget.get(flush=False)
+        target = self.dome_remote.evt_elTarget.get()
         if target is None:
             return None
         if math.isnan(target.position):
@@ -129,7 +129,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def get_dome_target_azimuth(self):
         """Get the current dome azimuth target.
         """
-        target = self.dome_remote.evt_azTarget.get(flush=False)
+        target = self.dome_remote.evt_azTarget.get()
         if target is None:
             return None
         if math.isnan(target.position):
@@ -197,8 +197,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             return
         moved_elevation = False
         moved_azimuth = False
-        dome_az_motion_state = self.dome_remote.evt_azMotion.get(flush=False)
-        dome_el_motion_state = self.dome_remote.evt_elMotion.get(flush=False)
+        dome_az_motion_state = self.dome_remote.evt_azMotion.get()
+        dome_el_motion_state = self.dome_remote.evt_elMotion.get()
         if None in (dome_el_motion_state, dome_az_motion_state):
             # We don't know enough about the dome yet
             return
@@ -253,7 +253,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             Desired dome elevation. The velocity is ignored.
         """
         try:
-            dome_el_motion_state = self.dome_remote.evt_elMotion.get(flush=False)
+            dome_el_motion_state = self.dome_remote.evt_elMotion.get()
             if dome_el_motion_state is None:
                 self.log.warning("No data for Dome elMotion event; not moving the dome")
                 return
@@ -296,7 +296,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             Desired dome azimuth.
         """
         try:
-            dome_az_motion_state = self.dome_remote.evt_azMotion.get(flush=False)
+            dome_az_motion_state = self.dome_remote.evt_azMotion.get()
             if dome_az_motion_state is None:
                 self.log.warning(
                     "No data for the Dome azMotion event; not moving the dome"

@@ -362,7 +362,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
         Raise an exception for any other value.
         """
-        data = event.get(flush=False)
+        data = event.get()
         if data is None:
             return False
         if data.state == MTDome.MotionState.MOVING:
