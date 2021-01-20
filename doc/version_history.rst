@@ -6,6 +6,22 @@
 Version History
 ###############
 
+v0.4.0
+======
+
+Changes:
+
+* Updated for ts_xml 7.1 (which is required).
+  Use ``MTMount`` instead of ``NewMTMount`` IDL.
+* Updated to use ``pre-commit`` to check commits.
+
+Requires:
+
+* ts_salobj 6
+* ts_config_mttcs
+* ts_simactuators 2
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 7.1.
+
 v0.3.0
 ======
 
@@ -20,8 +36,6 @@ Requires:
 * ts_config_mttcs
 * ts_simactuators 2
 * IDL files for MTDomeTrajectory and MTDome
-
-Requires:
 
 v0.2.1
 ======
