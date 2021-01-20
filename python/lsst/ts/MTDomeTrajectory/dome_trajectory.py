@@ -75,7 +75,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             simulation_mode=0,
         )
 
-        # Telescope target, from the NewMTMount target event;
+        # Telescope target, from the MTMount target event;
         # an ElevationAzimuth; None before a target is seen.
         self.telescope_target = None
 
@@ -97,8 +97,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         # whenever the follow_target method runs.
         self.follow_task = asyncio.Future()
 
-        self.newmtmount_remote = salobj.Remote(
-            domain=self.domain, name="NewMTMount", include=["target"]
+        self.mtmount_remote = salobj.Remote(
+            domain=self.domain, name="MTMount", include=["target"]
         )
         self.dome_remote = salobj.Remote(
             domain=self.domain,
@@ -106,7 +106,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             include=["azMotion", "azTarget", "elMotion", "elTarget"],
         )
 
-        self.newmtmount_remote.evt_target.callback = self.update_mtmount_target
+        self.mtmount_remote.evt_target.callback = self.update_mtmount_target
 
     @staticmethod
     def get_config_pkg():
@@ -162,7 +162,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             self.move_dome_elevation_task.cancel()
 
     async def update_mtmount_target(self, target):
-        """Callback for NewMTMount target event.
+        """Callback for MTMount target event.
 
         This is triggered in any summary state, but only
         commands a new dome position if enabled.
