@@ -48,13 +48,13 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
     def setUp(self):
         self.dome_csc = None
         self.dome_remote = None
-        self.newmtmount_controller = None
+        self.mtmount_controller = None
 
     async def tearDown(self):
         for item_to_close in (
             self.dome_csc,
             self.dome_remote,
-            self.newmtmount_controller,
+            self.mtmount_controller,
         ):
             if item_to_close is not None:
                 await item_to_close.close()
@@ -67,7 +67,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
         )
         self.dome_remote = salobj.Remote(domain=self.dome_csc.domain, name="MTDome")
-        self.newmtmount_controller = salobj.Controller("NewMTMount")
+        self.mtmount_controller = salobj.Controller("MTMount")
         return MTDomeTrajectory.MTDomeTrajectory(
             initial_state=initial_state, config_dir=config_dir,
         )
@@ -306,7 +306,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
 
         # Set telescope target
         follow_task = self.csc.make_follow_task()
-        self.newmtmount_controller.evt_target.set_put(
+        self.mtmount_controller.evt_target.set_put(
             elevation=elevation, azimuth=azimuth, force_output=True
         )
 
@@ -398,7 +398,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             (dome_target_elevation.position, dome_target_azimuth.position),
         ):
             follow_task = self.csc.make_follow_task()
-            self.newmtmount_controller.evt_target.set_put(
+            self.mtmount_controller.evt_target.set_put(
                 elevation=target_elevation, azimuth=target_azimuth, force_output=True
             )
             follow_result = await asyncio.wait_for(follow_task, timeout=STD_TIMEOUT)
