@@ -19,13 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+try:
+    from .version import *
+except ImportError:
+    __version__ = "?"
+
 from .elevation_azimuth import *
 from .base_algorithm import *
 from .simple_algorithm import *
 from .dome_trajectory import *
 from .mock_dome import *
-
-try:
-    from .version import *
-except ImportError:
-    __version__ = "?"

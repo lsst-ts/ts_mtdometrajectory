@@ -83,6 +83,12 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
         """Test standard CSC state transitions.
         """
         async with self.make_csc(initial_state=salobj.State.STANDBY):
+            await self.assert_next_sample(
+                topic=self.remote.evt_softwareVersions,
+                cscVersion=MTDomeTrajectory.__version__,
+                subsystemVersions="",
+            )
+
             await self.check_standard_state_transitions(enabled_commands=())
 
     async def test_simple_follow(self):
