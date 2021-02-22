@@ -6,6 +6,22 @@
 Version History
 ###############
 
+v0.4.1
+======
+
+Changes:
+
+* `MTDomeTrajectory`: set the ``version`` class attribute.
+  This sets the ``cscVersion`` field of the ``softwareVersions`` event.
+* Modernize doc/conf.py for documenteer 0.6.
+
+Requires:
+
+* ts_salobj 6
+* ts_config_mttcs
+* ts_simactuators 2
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 7.1.
+
 v0.4.0
 ======
 
