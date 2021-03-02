@@ -79,6 +79,14 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             name="MTDomeTrajectory", index=None, exe_name="run_mtdometrajectory.py",
         )
 
+    async def test_initial_info(self):
+        async with self.make_csc(
+            initial_state=salobj.State.DISABLED, config_dir=TEST_CONFIG_DIR
+        ):
+            await self.assert_next_sample(
+                topic=self.remote.evt_algorithm, algorithmName="simple",
+            )
+
     async def test_standard_state_transitions(self):
         """Test standard CSC state transitions.
         """
