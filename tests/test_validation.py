@@ -1,6 +1,6 @@
 # This file is part of ts_MTDomeTrajectory.
 #
-# Developed for the LSST Telescope and Site Systems.
+# Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
 # (https://www.lsst.org).
 # See the COPYRIGHT file at the top-level directory of this distribution
@@ -20,25 +20,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import unittest
-import pathlib
-
-# import types  for SimpleNamespace
 
 import jsonschema
-import yaml
 
 from lsst.ts import salobj
+from lsst.ts import MTDomeTrajectory
 
 
 class ValidationTestCase(unittest.TestCase):
     """Test validation of the config schema."""
 
     def setUp(self):
-        schemaname = "MTDomeTrajectory.yaml"
-        schemapath = pathlib.Path(__file__).parents[1].joinpath("schema", schemaname)
-        with open(schemapath, "r") as f:
-            rawschema = f.read()
-        self.schema = yaml.safe_load(rawschema)
+        self.schema = MTDomeTrajectory.CONFIG_SCHEMA
         self.validator = salobj.DefaultingValidator(schema=self.schema)
         # Values copied from the schema
         self.default_config = dict(

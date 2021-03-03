@@ -24,6 +24,7 @@ try:
 except ImportError:
     __version__ = "?"
 
+from .config_schema import *
 from .elevation_azimuth import *
 from .base_algorithm import *
 from .simple_algorithm import *
