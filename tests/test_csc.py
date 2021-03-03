@@ -79,14 +79,6 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             name="MTDomeTrajectory", index=None, exe_name="run_mtdometrajectory.py",
         )
 
-    async def test_initial_info(self):
-        async with self.make_csc(
-            initial_state=salobj.State.DISABLED, config_dir=TEST_CONFIG_DIR
-        ):
-            await self.assert_next_sample(
-                topic=self.remote.evt_algorithm, algorithmName="simple",
-            )
-
     async def test_standard_state_transitions(self):
         """Test standard CSC state transitions.
         """
@@ -163,10 +155,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             initial_state=salobj.State.STANDBY, config_dir=TEST_CONFIG_DIR
         ):
             self.assertEqual(self.csc.summary_state, salobj.State.STANDBY)
-            state = await self.remote.evt_summaryState.next(
-                flush=False, timeout=STD_TIMEOUT
-            )
-            self.assertEqual(state.summaryState, salobj.State.STANDBY)
+            await self.assert_next_summary_state(salobj.State.STANDBY)
 
             for bad_config_name in (
                 "no_such_file.yaml",
@@ -182,10 +171,7 @@ class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             self.remote.cmd_start.set(settingsToApply="valid.yaml")
             await self.remote.cmd_start.start(timeout=STD_TIMEOUT)
             self.assertEqual(self.csc.summary_state, salobj.State.DISABLED)
-            state = await self.remote.evt_summaryState.next(
-                flush=False, timeout=STD_TIMEOUT
-            )
-            self.assertEqual(state.summaryState, salobj.State.DISABLED)
+            await self.assert_next_summary_state(salobj.State.DISABLED)
             settings = await self.remote.evt_algorithm.next(
                 flush=False, timeout=STD_TIMEOUT
             )
