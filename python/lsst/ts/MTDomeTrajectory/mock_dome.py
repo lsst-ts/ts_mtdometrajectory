@@ -54,6 +54,7 @@ class MockDome(salobj.BaseCsc):
     """
 
     valid_simulation_modes = [0]
+    version = "mock"
 
     def __init__(
         self,
