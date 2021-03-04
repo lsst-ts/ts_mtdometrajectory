@@ -1,6 +1,6 @@
 # This file is part of ts_MTDomeTrajectory.
 #
-# Developed for the LSST Telescope and Site Systems.
+# Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
 # (https://www.lsst.org).
 # See the COPYRIGHT file at the top-level directory of this distribution
@@ -54,6 +54,7 @@ class MockDome(salobj.BaseCsc):
     """
 
     valid_simulation_modes = [0]
+    version = "mock"
 
     def __init__(
         self,

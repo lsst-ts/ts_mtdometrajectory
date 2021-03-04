@@ -1,6 +1,6 @@
 # This file is part of ts_MTDomeTrajectory.
 #
-# Developed for the LSST Telescope and Site Systems.
+# Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
 # (https://www.lsst.org).
 # See the COPYRIGHT file at the top-level directory of this distribution
@@ -23,7 +23,6 @@ __all__ = ["MTDomeTrajectory"]
 
 import asyncio
 import math
-import pathlib
 
 import yaml
 
@@ -31,6 +30,7 @@ from lsst.ts.idl.enums import MTDome
 from lsst.ts import salobj
 from lsst.ts import simactuators
 from . import __version__
+from .config_schema import CONFIG_SCHEMA
 from .elevation_azimuth import ElevationAzimuth
 from .base_algorithm import AlgorithmRegistry
 
@@ -63,14 +63,9 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def __init__(
         self, config_dir=None, initial_state=salobj.base_csc.State.STANDBY,
     ):
-        schema_path = (
-            pathlib.Path(__file__)
-            .parents[4]
-            .joinpath("schema", "MTDomeTrajectory.yaml")
-        )
         super().__init__(
             name="MTDomeTrajectory",
-            schema_path=schema_path,
+            config_schema=CONFIG_SCHEMA,
             config_dir=config_dir,
             index=None,
             initial_state=initial_state,
@@ -148,7 +143,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         Parameters
         ----------
         config : `types.SimpleNamespace`
-            Configuration, as described by ``schema/MTDomeTrajectory.yaml``
+            Configuration, as described by `CONFIG_SCHEMA`
         """
         self.algorithm = AlgorithmRegistry[config.algorithm_name](
             **config.algorithm_config

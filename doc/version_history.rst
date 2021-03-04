@@ -6,6 +6,22 @@
 Version History
 ###############
 
+v0.5.0
+======
+
+Changes:
+
+* Store the CSC configuration schema in code.
+  This requires ts_salobj 6.3.
+* `MockDome`: set the ``version`` class attribute.
+
+Requires:
+
+* ts_salobj 6.3
+* ts_config_mttcs
+* ts_simactuators 2
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 7.1.
+
 v0.4.1
 ======
 
