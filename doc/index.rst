@@ -40,24 +40,36 @@ Start the MTDomeTrajectory CSC as follows:
 
 Stop the CSC by sending it to the OFFLINE state.
 
-To make dome track the telescope send the MTDomeTrajectory CSC to the ENABLED state.
+To make the dome follow the telescope: issue the MTDomeTrajectory `setEnabledMode command`_ with ``enabled=True``.
 
-To stop the dome from tracking the telescope (e.g. if you want to send the dome to some specific position) send the MTDomeTrajectory CSC to the DISABLED state (or any state other than ENABLED).
+To move the dome to a specified position that is different from the telescope:
 
-MTDomeTrajectory supports multiple algorithms for moving the dome.
-The algorithm is specified in the :ref:`configuration <lsst.ts.MTDomeTrajectory-configuration>`.
+* Stop the dome from following: issue the MTDomeTrajectory `setEnabledMode command`_ with ``enabled=False``.
+* Move the dome: issue the MTDome `moveAz command`_ and/or `moveEl command`_.
+
+MTDomeTrajectory can support multiple algorithms for making the dome follow the telescope;
+but at the time of this writing, there is only one.
+The algorithm is specified and configured in :ref:`configuration <lsst.ts.MTDomeTrajectory-configuration>`.
+
+.. _setEnabledMode command: https://ts-xml.lsst.io/sal_interfaces/MTDomeTrajectory.html#setenabledmode
+.. _moveAz command: https://ts-xml.lsst.io/sal_interfaces/MTDome.html#moveaz
+.. _moveEl command: https://ts-xml.lsst.io/sal_interfaces/MTDome.html#moveel
+
+Simulation
+----------
 
 MTDomeTrajectory can be fully exercised without hardware by running the `MTMount CSC`_ and `MTDome CSC`_ in simulation mode.
-Thus MTDomeTrajectory does not need or have a simulation mode of its own.
-
+MTDomeTrajectory does not have a simulation mode of its own.
 
 .. _lsst.ts.MTDomeTrajectory-configuration:
 
 Configuration
 -------------
 
-Configuration is defined by `this schema <https://github.com/lsst-ts/ts_MTDomeTrajectory/blob/develop/schema/MTDomeTrajectory.yaml>`_.
+Configuration is defined by `CONFIG_SCHEMA <https://github.com/lsst-ts/ts_MTDomeTrajectory/blob/develop/python/lsst/ts/MTDomeTrajectory/config_schema.py>`_.
 Configuration primarily consists of specifying the control algorithm and its associated parameters.
+
+.. _lsst.ts.MTDomeTrajectory-configuration-algorithms:
 
 Available algorithms:
 
