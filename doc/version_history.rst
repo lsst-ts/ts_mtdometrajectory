@@ -6,6 +6,21 @@
 Version History
 ###############
 
+v0.6.0
+======
+
+Changes:
+
+* Support the ``setFollowingMode`` command.
+  This requires ts_xml 8.1.
+
+Requires:
+
+* ts_salobj 6.3
+* ts_config_mttcs
+* ts_simactuators 2
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 8.1.
+
 v0.5.0
 ======
 
