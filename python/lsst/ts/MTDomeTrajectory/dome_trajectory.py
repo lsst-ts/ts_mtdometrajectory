@@ -109,6 +109,29 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def get_config_pkg():
         return "ts_config_mttcs"
 
+    @property
+    def following_enabled(self):
+        """Is following enabled?
+
+        False if the CSC is not in the ENABLED state
+        or if following is not enabled.
+        """
+        if self.summary_state != salobj.State.ENABLED:
+            return False
+        return self.evt_followingMode.data.enabled
+
+    async def do_setFollowingMode(self, data):
+        """Handle the setFollowingMode command.
+        """
+        self.assert_enabled()
+        if data.enable:
+            # Report following enabled and trigger an update
+            self.evt_followingMode.set_put(enabled=True)
+            await self.follow_target()
+        else:
+            self.evt_followingMode.set_put(enabled=False)
+            self.move_dome_azimuth_task.cancel()
+
     def get_dome_target_elevation(self):
         """Get the current dome elevation target.
         """
@@ -157,6 +180,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         if not self.summary_state == salobj.State.ENABLED:
             self.move_dome_azimuth_task.cancel()
             self.move_dome_elevation_task.cancel()
+            self.evt_followingMode.set_put(enabled=False)
 
     async def update_mtmount_target(self, target):
         """Callback for MTMount target event.
@@ -186,7 +210,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         the CSC and remotes have fully started,
         and the target azimuth is known.
         """
-        if self.summary_state != salobj.State.ENABLED:
+        if not self.following_enabled:
             return
         if not self.start_task.done():
             return
