@@ -363,3 +363,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         except Exception:
             self.log.exception("move_dome_azimuth failed")
             raise
+
+    async def start(self):
+        await super().start()
+        await self.dome_remote.start_task
