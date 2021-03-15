@@ -21,8 +21,6 @@
 
 import unittest
 
-import asynctest
-
 from lsst.ts.idl.enums import MTDome
 from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
@@ -30,7 +28,7 @@ from lsst.ts import MTDomeTrajectory
 STD_TIMEOUT = 60
 
 
-class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
+class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase):
     def basic_make_csc(self, initial_state, *args, **kwargs):
         """Make and return a CSC.
 

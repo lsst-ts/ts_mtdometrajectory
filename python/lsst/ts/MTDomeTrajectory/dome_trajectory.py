@@ -55,13 +55,19 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         The initial state of the CSC. Typically one of:
         - State.ENABLED if you want the CSC immediately usable.
         - State.STANDBY if you want full emulation of a CSC.
+    settings_to_apply : `str`, optional
+        Settings to apply if ``initial_state`` is `State.DISABLED`
+        or `State.ENABLED`.
     """
 
     valid_simulation_modes = [0]
     version = __version__
 
     def __init__(
-        self, config_dir=None, initial_state=salobj.base_csc.State.STANDBY,
+        self,
+        config_dir=None,
+        initial_state=salobj.base_csc.State.STANDBY,
+        settings_to_apply="",
     ):
         super().__init__(
             name="MTDomeTrajectory",
@@ -69,6 +75,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             config_dir=config_dir,
             index=None,
             initial_state=initial_state,
+            settings_to_apply=settings_to_apply,
             simulation_mode=0,
         )
 
@@ -356,3 +363,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         except Exception:
             self.log.exception("move_dome_azimuth failed")
             raise
+
+    async def start(self):
+        await super().start()
+        await self.dome_remote.start_task
