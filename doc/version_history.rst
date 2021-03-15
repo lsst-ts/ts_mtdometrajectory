@@ -13,6 +13,11 @@ Changes:
 
 * Support the ``setFollowingMode`` command.
   This requires ts_xml 8.1.
+* `ATDomeTrajectory`: wait for the dome remote to start at startup,
+  to avoid the CSC trying to command the dome before the remote is ready.
+* ``test_csc.py``: eliminate several race conditions in ``make_csc``
+   by waiting for the extra remotes and controllers to start.
+* Eliminate use of the abandoned ``asynctest`` package; use `unittest.IsolatedAsyncioTestCase` instead.
 
 Requires:
 
