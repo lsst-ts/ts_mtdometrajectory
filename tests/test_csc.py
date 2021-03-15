@@ -27,7 +27,6 @@ import os
 import pathlib
 import unittest
 
-import asynctest
 import yaml
 
 from lsst.ts.idl.enums import MTDome
@@ -45,7 +44,9 @@ NODATA_TIMEOUT = 0.5  # Timeout when no data expected (sec)
 RAD_PER_DEG = math.pi / 180
 
 
-class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
+class MTDomeTrajectoryTestCase(
+    salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase
+):
     @contextlib.asynccontextmanager
     async def make_csc(
         self,
