@@ -20,6 +20,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import asyncio
+import contextlib
 import logging
 import math
 import os
@@ -45,31 +46,39 @@ RAD_PER_DEG = math.pi / 180
 
 
 class MTDomeTrajectoryTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
-    def setUp(self):
-        self.dome_csc = None
-        self.dome_remote = None
-        self.mtmount_controller = None
-
-    async def tearDown(self):
-        for item_to_close in (
-            self.dome_csc,
-            self.dome_remote,
-            self.mtmount_controller,
-        ):
-            if item_to_close is not None:
-                await item_to_close.close()
+    @contextlib.asynccontextmanager
+    async def make_csc(
+        self,
+        initial_state,
+        config_dir=None,
+        initial_elevation=0,
+        settings_to_apply="",
+        simulation_mode=0,
+        log_level=None,
+    ):
+        async with super().make_csc(
+            initial_state=initial_state,
+            config_dir=config_dir,
+            settings_to_apply=settings_to_apply,
+            simulation_mode=simulation_mode,
+            log_level=log_level,
+        ), MTDomeTrajectory.MockDome(
+            initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
+        ) as self.dome_csc, salobj.Remote(
+            domain=self.dome_csc.domain, name="MTDome"
+        ) as self.dome_remote, salobj.Controller(
+            "MTMount"
+        ) as self.mtmount_controller:
+            yield
 
     def basic_make_csc(
-        self, initial_state, config_dir, simulation_mode, initial_elevation=0
+        self, initial_state, config_dir, simulation_mode, settings_to_apply="",
     ):
         self.assertEqual(simulation_mode, 0)
-        self.dome_csc = MTDomeTrajectory.MockDome(
-            initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
-        )
-        self.dome_remote = salobj.Remote(domain=self.dome_csc.domain, name="MTDome")
-        self.mtmount_controller = salobj.Controller("MTMount")
         return MTDomeTrajectory.MTDomeTrajectory(
-            initial_state=initial_state, config_dir=config_dir,
+            initial_state=initial_state,
+            config_dir=config_dir,
+            settings_to_apply=settings_to_apply,
         )
 
     async def test_bin_script(self):
