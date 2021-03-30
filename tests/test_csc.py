@@ -73,7 +73,11 @@ class MTDomeTrajectoryTestCase(
             yield
 
     def basic_make_csc(
-        self, initial_state, config_dir, simulation_mode, settings_to_apply="",
+        self,
+        initial_state,
+        config_dir,
+        simulation_mode,
+        settings_to_apply="",
     ):
         self.assertEqual(simulation_mode, 0)
         return MTDomeTrajectory.MTDomeTrajectory(
@@ -83,15 +87,15 @@ class MTDomeTrajectoryTestCase(
         )
 
     async def test_bin_script(self):
-        """Test that run_mtdometrajectory.py runs the CSC.
-        """
+        """Test that run_mtdometrajectory.py runs the CSC."""
         await self.check_bin_script(
-            name="MTDomeTrajectory", index=None, exe_name="run_mtdometrajectory.py",
+            name="MTDomeTrajectory",
+            index=None,
+            exe_name="run_mtdometrajectory.py",
         )
 
     async def test_standard_state_transitions(self):
-        """Test standard CSC state transitions.
-        """
+        """Test standard CSC state transitions."""
         async with self.make_csc(initial_state=salobj.State.STANDBY):
             await self.assert_next_sample(
                 topic=self.remote.evt_softwareVersions,
@@ -104,8 +108,7 @@ class MTDomeTrajectoryTestCase(
             )
 
     async def test_simple_follow(self):
-        """Test that dome follows telescope using the "simple" algorithm.
-        """
+        """Test that dome follows telescope using the "simple" algorithm."""
         initial_elevation = 40
         async with self.make_csc(
             initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
@@ -170,7 +173,8 @@ class MTDomeTrajectoryTestCase(
                 elevation=elevation, azimuth=new_telescope_azimuth, force_output=True
             )
             await self.assert_dome_azimuth(
-                expected_azimuth=None, move_expected=False,
+                expected_azimuth=None,
+                move_expected=False,
             )
 
     async def test_default_config_dir(self):

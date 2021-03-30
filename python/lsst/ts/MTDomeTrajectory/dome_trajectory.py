@@ -128,8 +128,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         return self.evt_followingMode.data.enabled
 
     async def do_setFollowingMode(self, data):
-        """Handle the setFollowingMode command.
-        """
+        """Handle the setFollowingMode command."""
         self.assert_enabled()
         if data.enable:
             # Report following enabled and trigger an update
@@ -140,8 +139,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             self.move_dome_azimuth_task.cancel()
 
     def get_dome_target_elevation(self):
-        """Get the current dome elevation target.
-        """
+        """Get the current dome elevation target."""
         target = self.dome_remote.evt_elTarget.get()
         if target is None:
             return None
@@ -154,8 +152,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         )
 
     def get_dome_target_azimuth(self):
-        """Get the current dome azimuth target.
-        """
+        """Get the current dome azimuth target."""
         target = self.dome_remote.evt_azTarget.get()
         if target is None:
             return None
@@ -306,7 +303,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             self.dome_remote.evt_elTarget.flush()
             self.log.debug("Start dome elevation motion")
             await self.dome_remote.cmd_moveEl.set_start(
-                position=desired_dome_elevation.position, timeout=STD_TIMEOUT,
+                position=desired_dome_elevation.position,
+                timeout=STD_TIMEOUT,
             )
             await self.dome_remote.evt_elTarget.next(flush=False, timeout=STD_TIMEOUT)
         except asyncio.CancelledError:

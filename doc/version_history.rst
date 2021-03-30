@@ -18,6 +18,7 @@ Changes:
 * ``test_csc.py``: eliminate several race conditions in ``make_csc``
    by waiting for the extra remotes and controllers to start.
 * Eliminate use of the abandoned ``asynctest`` package; use `unittest.IsolatedAsyncioTestCase` instead.
+* Format the code with black 20.8b1.
 
 Requires:
 

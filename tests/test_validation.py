@@ -53,7 +53,10 @@ class ValidationTestCase(unittest.TestCase):
 
     def test_all_specified(self):
         algorithm_config = dict(max_delta_azimuth=3.5, max_delta_elevation=2.2)
-        data = dict(algorithm_name="simple", algorithm_config=algorithm_config.copy(),)
+        data = dict(
+            algorithm_name="simple",
+            algorithm_config=algorithm_config.copy(),
+        )
         result = self.validator.validate(data)
         self.assertEqual(result["algorithm_name"], "simple")
         self.assertEqual(result["algorithm_config"], algorithm_config)
