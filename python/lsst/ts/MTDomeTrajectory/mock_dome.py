@@ -99,10 +99,12 @@ class MockDome(salobj.BaseCsc):
     async def start(self):
         await super().start()
         self.evt_azMotion.set_put(
-            state=MTDome.MotionState.STOPPED, inPosition=False,
+            state=MTDome.MotionState.STOPPED,
+            inPosition=False,
         )
         self.evt_elMotion.set_put(
-            state=MTDome.MotionState.STOPPED, inPosition=False,
+            state=MTDome.MotionState.STOPPED,
+            inPosition=False,
         )
 
     async def close_tasks(self):
@@ -112,7 +114,8 @@ class MockDome(salobj.BaseCsc):
         self.stop_elevation()
 
     def get_target_elevation(self):
-        """Get the target elevation as an lsst.ts.simactuators.path.PathSegment
+        """Get the target elevation as an
+        lsst.ts.simactuators.path.PathSegment.
         """
         return simactuators.path.PathSegment(
             position=self.elevation_actuator.end_position,
@@ -121,7 +124,8 @@ class MockDome(salobj.BaseCsc):
         )
 
     def get_target_azimuth(self):
-        """Get the target azimuth as an lsst.ts.simactuators.path.PathSegment
+        """Get the target azimuth as an
+        lsst.ts.simactuators.path.PathSegment.
         """
         return self.azimuth_actuator.target
 
@@ -132,7 +136,8 @@ class MockDome(salobj.BaseCsc):
         self.elevation_actuator.set_position(position=data.position)
         self.evt_elTarget.set_put(position=data.position, velocity=0, force_output=True)
         self.evt_elMotion.set_put(
-            state=MTDome.MotionState.MOVING, inPosition=False,
+            state=MTDome.MotionState.MOVING,
+            inPosition=False,
         )
         self.elevation_done_task = asyncio.create_task(
             self.report_elevation_done(
@@ -145,13 +150,16 @@ class MockDome(salobj.BaseCsc):
         if not self.azimuth_done_task.done():
             raise salobj.ExpectedError("Azimuth slew not done.")
         self.azimuth_actuator.set_target(
-            position=data.position, velocity=data.velocity, tai=salobj.current_tai(),
+            position=data.position,
+            velocity=data.velocity,
+            tai=salobj.current_tai(),
         )
         self.evt_azTarget.set_put(
             position=data.position, velocity=data.velocity, force_output=True
         )
         self.evt_azMotion.set_put(
-            state=MTDome.MotionState.MOVING, inPosition=False,
+            state=MTDome.MotionState.MOVING,
+            inPosition=False,
         )
         end_motion_state = (
             MTDome.MotionState.CRAWLING
@@ -199,7 +207,8 @@ class MockDome(salobj.BaseCsc):
         if duration > 0:
             await asyncio.sleep(duration)
         self.evt_azMotion.set_put(
-            state=motion_state, inPosition=in_position,
+            state=motion_state,
+            inPosition=in_position,
         )
 
     async def report_elevation_done(self, in_position, motion_state):
@@ -216,7 +225,8 @@ class MockDome(salobj.BaseCsc):
         if duration > 0:
             await asyncio.sleep(duration)
         self.evt_elMotion.set_put(
-            state=motion_state, inPosition=in_position,
+            state=motion_state,
+            inPosition=in_position,
         )
 
     def stop_azimuth(self):
@@ -231,7 +241,8 @@ class MockDome(salobj.BaseCsc):
             return
         self.azimuth_done_task.cancel()
         self.evt_azMotion.set_put(
-            state=MTDome.MotionState.STOPPING, inPosition=False,
+            state=MTDome.MotionState.STOPPING,
+            inPosition=False,
         )
         self.azimuth_done_task = asyncio.create_task(
             self.report_azimuth_done(
@@ -251,10 +262,12 @@ class MockDome(salobj.BaseCsc):
             return
         self.elevation_done_task.cancel()
         self.evt_elMotion.set_put(
-            state=MTDome.MotionState.STOPPING, inPosition=False,
+            state=MTDome.MotionState.STOPPING,
+            inPosition=False,
         )
         self.evt_elMotion.set_put(
-            state=MTDome.MotionState.STOPPED, inPosition=False,
+            state=MTDome.MotionState.STOPPED,
+            inPosition=False,
         )
 
     async def telemetry_loop(self):
