@@ -36,11 +36,12 @@ class ValidationTestCase(unittest.TestCase):
         # Values copied from the schema
         self.default_config = dict(
             algorithm_name="simple",
-            algorithm_config=dict(max_delta_azimuth=5, max_delta_elevation=6),
+            simple=dict(max_delta_azimuth=5, max_delta_elevation=6),
         )
 
     def test_default(self):
         result = self.validator.validate(None)
+        print("result=", result)
         self.assertEqual(result["algorithm_name"], "simple")
         self.assertEqual(result, self.default_config)
 
@@ -55,11 +56,11 @@ class ValidationTestCase(unittest.TestCase):
         algorithm_config = dict(max_delta_azimuth=3.5, max_delta_elevation=2.2)
         data = dict(
             algorithm_name="simple",
-            algorithm_config=algorithm_config.copy(),
+            simple=algorithm_config.copy(),
         )
         result = self.validator.validate(data)
         self.assertEqual(result["algorithm_name"], "simple")
-        self.assertEqual(result["algorithm_config"], algorithm_config)
+        self.assertEqual(result["simple"], algorithm_config)
 
     def test_bad_algorithm_name(self):
         data = dict(algorithm_name="invalid_name")
@@ -68,7 +69,7 @@ class ValidationTestCase(unittest.TestCase):
 
     def test_bad_algorithm_config(self):
         """The current schema only checks for a dict."""
-        data = dict(algorithm_name="simple", algorithm_config=45)
+        data = dict(algorithm_name="simple", simple=45)
         with self.assertRaises(jsonschema.exceptions.ValidationError):
             self.validator.validate(data)
 

@@ -1,3 +1,3 @@
 algorithm_name: "simple"
-algorithm_config:
+simple:
   max_delta_azimuth: "invalid value"

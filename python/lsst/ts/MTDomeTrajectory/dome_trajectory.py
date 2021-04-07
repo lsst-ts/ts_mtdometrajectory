@@ -172,12 +172,14 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         config : `types.SimpleNamespace`
             Configuration, as described by `CONFIG_SCHEMA`
         """
-        self.algorithm = AlgorithmRegistry[config.algorithm_name](
-            **config.algorithm_config
-        )
+        algorithm_name = config.algorithm_name
+        if algorithm_name not in AlgorithmRegistry:
+            raise salobj.ExpectedError(f"Unknown algorithm {algorithm_name}")
+        algorithm_config = getattr(config, config.algorithm_name)
+        self.algorithm = AlgorithmRegistry[config.algorithm_name](**algorithm_config)
         self.evt_algorithm.set_put(
             algorithmName=config.algorithm_name,
-            algorithmConfig=yaml.dump(config.algorithm_config),
+            algorithmConfig=yaml.dump(algorithm_config),
         )
 
     async def handle_summary_state(self):
