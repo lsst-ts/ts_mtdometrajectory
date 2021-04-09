@@ -21,8 +21,6 @@
 
 import unittest
 
-import asynctest
-
 from lsst.ts.idl.enums import MTDome
 from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
@@ -30,7 +28,7 @@ from lsst.ts import MTDomeTrajectory
 STD_TIMEOUT = 60
 
 
-class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
+class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase):
     def basic_make_csc(self, initial_state, *args, **kwargs):
         """Make and return a CSC.
 
@@ -70,8 +68,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             )
 
     async def test_move_az(self):
-        """Test the moveAz command.
-        """
+        """Test the moveAz command."""
         async with self.make_csc(initial_state=salobj.State.ENABLED):
 
             await self.assert_next_sample(
@@ -161,8 +158,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             )
 
     async def test_move_el(self):
-        """Test the moveEl and stopEl commands.
-        """
+        """Test the moveEl and stopEl commands."""
         async with self.make_csc(initial_state=salobj.State.ENABLED):
 
             await self.assert_next_sample(
@@ -230,8 +226,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             )
 
     async def test_stop_az(self):
-        """Test the stopAz command.
-        """
+        """Test the stopAz command."""
         async with self.make_csc(initial_state=salobj.State.ENABLED):
 
             await self.assert_next_sample(
@@ -268,8 +263,7 @@ class FakeDomeTestCase(salobj.BaseCscTestCase, asynctest.TestCase):
             )
 
     async def test_stop_el(self):
-        """Test the stopEl command.
-        """
+        """Test the stopEl command."""
         async with self.make_csc(initial_state=salobj.State.ENABLED):
 
             await self.assert_next_sample(

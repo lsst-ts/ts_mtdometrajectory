@@ -2,3 +2,5 @@ algorithm_name: "simple"
 simple:
   max_delta_azimuth: 7.1
   max_delta_elevation: 5.5
+not_an_algorithm:
+  arbitrary_parameter_name: 7.1

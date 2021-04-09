@@ -90,6 +90,5 @@ class BaseAlgorithm(abc.ABC):
 
     @abc.abstractmethod
     def configure(self, **kwargs):
-        """Configure the algorithm.
-        """
+        """Configure the algorithm."""
         pass

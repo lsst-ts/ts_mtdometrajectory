@@ -55,13 +55,19 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         The initial state of the CSC. Typically one of:
         - State.ENABLED if you want the CSC immediately usable.
         - State.STANDBY if you want full emulation of a CSC.
+    settings_to_apply : `str`, optional
+        Settings to apply if ``initial_state`` is `State.DISABLED`
+        or `State.ENABLED`.
     """
 
     valid_simulation_modes = [0]
     version = __version__
 
     def __init__(
-        self, config_dir=None, initial_state=salobj.base_csc.State.STANDBY,
+        self,
+        config_dir=None,
+        initial_state=salobj.base_csc.State.STANDBY,
+        settings_to_apply="",
     ):
         super().__init__(
             name="MTDomeTrajectory",
@@ -69,6 +75,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             config_dir=config_dir,
             index=None,
             initial_state=initial_state,
+            settings_to_apply=settings_to_apply,
             simulation_mode=0,
         )
 
@@ -109,9 +116,30 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def get_config_pkg():
         return "ts_config_mttcs"
 
-    def get_dome_target_elevation(self):
-        """Get the current dome elevation target.
+    @property
+    def following_enabled(self):
+        """Is following enabled?
+
+        False if the CSC is not in the ENABLED state
+        or if following is not enabled.
         """
+        if self.summary_state != salobj.State.ENABLED:
+            return False
+        return self.evt_followingMode.data.enabled
+
+    async def do_setFollowingMode(self, data):
+        """Handle the setFollowingMode command."""
+        self.assert_enabled()
+        if data.enable:
+            # Report following enabled and trigger an update
+            self.evt_followingMode.set_put(enabled=True)
+            await self.follow_target()
+        else:
+            self.evt_followingMode.set_put(enabled=False)
+            self.move_dome_azimuth_task.cancel()
+
+    def get_dome_target_elevation(self):
+        """Get the current dome elevation target."""
         target = self.dome_remote.evt_elTarget.get()
         if target is None:
             return None
@@ -124,8 +152,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         )
 
     def get_dome_target_azimuth(self):
-        """Get the current dome azimuth target.
-        """
+        """Get the current dome azimuth target."""
         target = self.dome_remote.evt_azTarget.get()
         if target is None:
             return None
@@ -145,18 +172,21 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         config : `types.SimpleNamespace`
             Configuration, as described by `CONFIG_SCHEMA`
         """
-        self.algorithm = AlgorithmRegistry[config.algorithm_name](
-            **config.algorithm_config
-        )
+        algorithm_name = config.algorithm_name
+        if algorithm_name not in AlgorithmRegistry:
+            raise salobj.ExpectedError(f"Unknown algorithm {algorithm_name}")
+        algorithm_config = getattr(config, config.algorithm_name)
+        self.algorithm = AlgorithmRegistry[config.algorithm_name](**algorithm_config)
         self.evt_algorithm.set_put(
             algorithmName=config.algorithm_name,
-            algorithmConfig=yaml.dump(config.algorithm_config),
+            algorithmConfig=yaml.dump(algorithm_config),
         )
 
     async def handle_summary_state(self):
         if not self.summary_state == salobj.State.ENABLED:
             self.move_dome_azimuth_task.cancel()
             self.move_dome_elevation_task.cancel()
+            self.evt_followingMode.set_put(enabled=False)
 
     async def update_mtmount_target(self, target):
         """Callback for MTMount target event.
@@ -186,7 +216,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         the CSC and remotes have fully started,
         and the target azimuth is known.
         """
-        if self.summary_state != salobj.State.ENABLED:
+        if not self.following_enabled:
             return
         if not self.start_task.done():
             return
@@ -275,7 +305,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             self.dome_remote.evt_elTarget.flush()
             self.log.debug("Start dome elevation motion")
             await self.dome_remote.cmd_moveEl.set_start(
-                position=desired_dome_elevation.position, timeout=STD_TIMEOUT,
+                position=desired_dome_elevation.position,
+                timeout=STD_TIMEOUT,
             )
             await self.dome_remote.evt_elTarget.next(flush=False, timeout=STD_TIMEOUT)
         except asyncio.CancelledError:
@@ -332,3 +363,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         except Exception:
             self.log.exception("move_dome_azimuth failed")
             raise
+
+    async def start(self):
+        await super().start()
+        await self.dome_remote.start_task
