@@ -19,7 +19,7 @@ Requires:
 * ts_salobj 6.3
 * ts_config_mttcs
 * ts_simactuators 2
-* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 8.1.
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 9.
 
 v0.6.0
 ------
@@ -27,7 +27,7 @@ v0.6.0
 Changes:
 
 * Support the ``setFollowingMode`` command.
-  This requires ts_xml 8.1.
+  This requires ts_xml 9.
 * `ATDomeTrajectory`: wait for the dome remote to start at startup,
   to avoid the CSC trying to command the dome before the remote is ready.
 * ``test_csc.py``: eliminate several race conditions in ``make_csc``
@@ -40,7 +40,7 @@ Requires:
 * ts_salobj 6.3
 * ts_config_mttcs
 * ts_simactuators 2
-* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 8.1.
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 9.
 
 v0.5.0
 ------
