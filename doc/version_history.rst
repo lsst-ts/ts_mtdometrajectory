@@ -6,6 +6,21 @@
 Version History
 ###############
 
+v0.7.0
+------
+
+Changes:
+
+* `MockDome`: add the ``exitFault`` command.
+  This requires (and is required by) ts_xml 9.1.
+
+Requires:
+
+* ts_salobj 6.3
+* ts_config_mttcs
+* ts_simactuators 2
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 9.1
+
 v0.6.0
 ------
 
