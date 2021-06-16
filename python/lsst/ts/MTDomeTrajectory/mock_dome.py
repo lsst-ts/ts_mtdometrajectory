@@ -84,6 +84,7 @@ class MockDome(salobj.BaseCsc):
         for name in (
             "crawlAz",
             "crawlEl",
+            "exitFault",
             "park",
             "setLouvers",
             "closeLouvers",
