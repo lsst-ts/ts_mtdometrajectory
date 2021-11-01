@@ -21,7 +21,7 @@
 
 import unittest
 
-from lsst.ts.idl.enums import MTDome
+from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
 from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
 
@@ -45,12 +45,12 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
 
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=MTDome.MotionState.STOPPED,
+                state=MotionState.STOPPED,
                 inPosition=False,
             )
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=MTDome.MotionState.STOPPED,
+                state=MotionState.STOPPED,
                 inPosition=False,
             )
 
@@ -73,7 +73,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
 
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=MTDome.MotionState.STOPPED,
+                state=MotionState.STOPPED,
                 inPosition=False,
             )
 
@@ -94,7 +94,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
 
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=MTDome.MotionState.MOVING,
+                state=MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_azTarget)
@@ -134,7 +134,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
             # Wait for the move to finish.
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=MTDome.MotionState.CRAWLING,
+                state=MotionState.CRAWLING,
                 inPosition=True,
             )
 
@@ -146,14 +146,14 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
             )
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=MTDome.MotionState.MOVING,
+                state=MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_azTarget, velocity=0)
             self.assertAlmostEqual(data.position, position2)
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=MTDome.MotionState.STOPPED,
+                state=MotionState.STOPPED,
                 inPosition=True,
             )
 
@@ -163,7 +163,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
 
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=MTDome.MotionState.STOPPED,
+                state=MotionState.STOPPED,
                 inPosition=False,
             )
 
@@ -181,7 +181,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
 
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=MTDome.MotionState.MOVING,
+                state=MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
@@ -203,7 +203,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
             # Wait for the move to finish.
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=MTDome.MotionState.STOPPED,
+                state=MotionState.STOPPED,
                 inPosition=True,
             )
 
@@ -214,88 +214,109 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
             )
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=MTDome.MotionState.MOVING,
+                state=MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
             self.assertAlmostEqual(data.position, position2)
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=MTDome.MotionState.STOPPED,
+                state=MotionState.STOPPED,
                 inPosition=True,
             )
 
-    async def test_stop_az(self):
-        """Test the stopAz command."""
+    async def test_stop(self):
+        """Test the stop command to stop azimuth and elevation."""
         async with self.make_csc(initial_state=salobj.State.ENABLED):
 
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=MTDome.MotionState.STOPPED,
+                state=MotionState.STOPPED,
                 inPosition=False,
             )
-
-            position = 20
-            velocity = -1
-            await self.remote.cmd_moveAz.set_start(
-                position=position, velocity=velocity, timeout=STD_TIMEOUT
+            await self.assert_next_sample(
+                self.remote.evt_elMotion,
+                state=MotionState.STOPPED,
+                inPosition=False,
             )
+            assert (
+                self.csc.azimuth_actuator.kind()
+                == self.csc.azimuth_actuator.Kind.Stopped
+            )
+            assert not self.csc.elevation_actuator.moving()
 
+            az_position = 20
+            az_velocity = -1
+            el_position = 30
+            await self.remote.cmd_moveAz.set_start(
+                position=az_position, velocity=az_velocity, timeout=STD_TIMEOUT
+            )
+            await self.remote.cmd_moveEl.set_start(
+                position=el_position, timeout=STD_TIMEOUT
+            )
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
-                state=MTDome.MotionState.MOVING,
+                state=MotionState.MOVING,
+                inPosition=False,
+            )
+            await self.assert_next_sample(
+                self.remote.evt_elMotion,
+                state=MotionState.MOVING,
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_azTarget)
-            self.assertAlmostEqual(data.position, position)
-            self.assertAlmostEqual(data.velocity, velocity)
+            self.assertAlmostEqual(data.position, az_position)
+            self.assertAlmostEqual(data.velocity, az_velocity)
 
-            await self.remote.cmd_stopAz.start(timeout=STD_TIMEOUT)
-            await self.assert_next_sample(
-                self.remote.evt_azMotion,
-                state=MTDome.MotionState.STOPPING,
-                inPosition=False,
-            )
-            await self.assert_next_sample(
-                self.remote.evt_azMotion,
-                state=MTDome.MotionState.STOPPED,
-                inPosition=False,
-            )
-
-    async def test_stop_el(self):
-        """Test the stopEl command."""
-        async with self.make_csc(initial_state=salobj.State.ENABLED):
-
-            await self.assert_next_sample(
-                self.remote.evt_elMotion,
-                state=MTDome.MotionState.STOPPED,
-                inPosition=False,
-            )
-
-            position = 30
-            await self.remote.cmd_moveEl.set_start(
-                position=position, timeout=STD_TIMEOUT
-            )
-
-            await self.assert_next_sample(
-                self.remote.evt_elMotion,
-                state=MTDome.MotionState.MOVING,
-                inPosition=False,
-            )
             data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
-            self.assertAlmostEqual(data.position, position)
+            self.assertAlmostEqual(data.position, el_position)
 
-            await self.remote.cmd_stopEl.start(timeout=STD_TIMEOUT)
+            assert (
+                self.csc.azimuth_actuator.kind()
+                != self.csc.azimuth_actuator.Kind.Stopped
+            )
+            assert self.csc.elevation_actuator.moving()
+
+            # Stop azimuth
+            await self.remote.cmd_stop.set_start(
+                subSystemIds=SubSystemId.AMCS, timeout=STD_TIMEOUT
+            )
+            await self.assert_next_sample(
+                self.remote.evt_azMotion,
+                state=MotionState.STOPPING,
+                inPosition=False,
+            )
+            await self.assert_next_sample(
+                self.remote.evt_azMotion,
+                state=MotionState.STOPPED,
+                inPosition=False,
+            )
+            assert (
+                self.csc.azimuth_actuator.kind()
+                == self.csc.azimuth_actuator.Kind.Stopped
+            )
+            assert self.csc.elevation_actuator.moving()
+
+            # Stop elevation
+            await self.remote.cmd_stop.set_start(
+                subSystemIds=SubSystemId.LWSCS, timeout=STD_TIMEOUT
+            )
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=MTDome.MotionState.STOPPING,
+                state=MotionState.STOPPING,
                 inPosition=False,
             )
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
-                state=MTDome.MotionState.STOPPED,
+                state=MotionState.STOPPED,
                 inPosition=False,
             )
+
+            assert (
+                self.csc.azimuth_actuator.kind()
+                == self.csc.azimuth_actuator.Kind.Stopped
+            )
+            assert not self.csc.elevation_actuator.moving()
 
 
 if __name__ == "__main__":

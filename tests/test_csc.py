@@ -29,7 +29,7 @@ import unittest
 
 import yaml
 
-from lsst.ts.idl.enums import MTDome
+from lsst.ts.idl.enums.MTDome import MotionState
 from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
 
@@ -115,10 +115,10 @@ class MTDomeTrajectoryTestCase(
         ):
             await self.assert_next_sample(self.remote.evt_followingMode, enabled=False)
             await self.assert_next_sample(
-                self.dome_remote.evt_azMotion, state=MTDome.MotionState.STOPPED
+                self.dome_remote.evt_azMotion, state=MotionState.STOPPED
             )
             await self.assert_next_sample(
-                self.dome_remote.evt_elMotion, state=MTDome.MotionState.STOPPED
+                self.dome_remote.evt_elMotion, state=MotionState.STOPPED
             )
 
             await self.remote.cmd_setFollowingMode.set_start(
@@ -358,11 +358,11 @@ class MTDomeTrajectoryTestCase(
         def expected_states(was_moving):
             if was_moving:
                 return [
-                    MTDome.MotionState.STOPPING,
-                    MTDome.MotionState.STOPPED,
-                    MTDome.MotionState.MOVING,
+                    MotionState.STOPPING,
+                    MotionState.STOPPED,
+                    MotionState.MOVING,
                 ]
-            return [MTDome.MotionState.MOVING]
+            return [MotionState.MOVING]
 
         if move_azimuth:
             for azimuth_state in expected_states(was_moving=azimuth_was_moving):
@@ -406,9 +406,9 @@ class MTDomeTrajectoryTestCase(
         data = event.get()
         if data is None:
             return False
-        if data.state == MTDome.MotionState.MOVING:
+        if data.state == MotionState.MOVING:
             return True
-        if data.state == MTDome.MotionState.STOPPED:
+        if data.state == MotionState.STOPPED:
             return False
         self.fail(f"Unexpected {event} state {data.state}")
 

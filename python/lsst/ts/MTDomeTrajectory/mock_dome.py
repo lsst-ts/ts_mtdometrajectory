@@ -23,7 +23,7 @@ __all__ = ["MockDome"]
 
 import asyncio
 
-from lsst.ts.idl.enums import MTDome
+from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
 from lsst.ts import salobj
 from lsst.ts import simactuators
 
@@ -31,11 +31,8 @@ from lsst.ts import simactuators
 class MockDome(salobj.BaseCsc):
     """A very limited fake Dome CSC
 
-    It receives the ``moveAzimuth`` command and outputs:
-
-    * ``azimuthCommandedState`` event
-    * ``position`` telemetry.
-
+    It mocks moving and stopping the azimuth and elevation axes,
+    and does nothing with any of the other subsystems.
     It does not enforce motion limits.
 
     Parameters
@@ -88,10 +85,9 @@ class MockDome(salobj.BaseCsc):
             "park",
             "setLouvers",
             "closeLouvers",
-            "stopLouvers",
             "closeShutter",
             "openShutter",
-            "stopShutter",
+            "setOperationalMode",
             "setTemperature",
         ):
             setattr(self, f"do_{name}", self._unsupportedCommand)
@@ -100,11 +96,11 @@ class MockDome(salobj.BaseCsc):
     async def start(self):
         await super().start()
         self.evt_azMotion.set_put(
-            state=MTDome.MotionState.STOPPED,
+            state=MotionState.STOPPED,
             inPosition=False,
         )
         self.evt_elMotion.set_put(
-            state=MTDome.MotionState.STOPPED,
+            state=MotionState.STOPPED,
             inPosition=False,
         )
 
@@ -137,12 +133,12 @@ class MockDome(salobj.BaseCsc):
         self.elevation_actuator.set_position(position=data.position)
         self.evt_elTarget.set_put(position=data.position, velocity=0, force_output=True)
         self.evt_elMotion.set_put(
-            state=MTDome.MotionState.MOVING,
+            state=MotionState.MOVING,
             inPosition=False,
         )
         self.elevation_done_task = asyncio.create_task(
             self.report_elevation_done(
-                in_position=True, motion_state=MTDome.MotionState.STOPPED
+                in_position=True, motion_state=MotionState.STOPPED
             )
         )
 
@@ -159,30 +155,22 @@ class MockDome(salobj.BaseCsc):
             position=data.position, velocity=data.velocity, force_output=True
         )
         self.evt_azMotion.set_put(
-            state=MTDome.MotionState.MOVING,
+            state=MotionState.MOVING,
             inPosition=False,
         )
         end_motion_state = (
-            MTDome.MotionState.CRAWLING
-            if data.velocity != 0
-            else MTDome.MotionState.STOPPED
+            MotionState.CRAWLING if data.velocity != 0 else MotionState.STOPPED
         )
         self.azimuth_done_task = asyncio.create_task(
             self.report_azimuth_done(in_position=True, motion_state=end_motion_state)
         )
 
-    def do_stopEl(self, data):
-        self.assert_enabled()
-        self.stop_elevation()
-
-    def do_stopAz(self, data):
-        self.assert_enabled()
-        self.stop_azimuth()
-
     def do_stop(self, data):
         self.assert_enabled()
-        self.stop_azimuth()
-        self.stop_elevation()
+        if data.subSystemIds & SubSystemId.AMCS:
+            self.stop_azimuth()
+        if data.subSystemIds & SubSystemId.LWSCS:
+            self.stop_elevation()
 
     async def handle_summary_state(self):
         if self.disabled_or_enabled:
@@ -200,7 +188,7 @@ class MockDome(salobj.BaseCsc):
         ----------
         in_position : `bool`
             Is the axis in position at the end of the move?
-        motion_state : `lsst.ts.idl.MTDome.MotionState`
+        motion_state : `lsst.ts.idl.MotionState`
             Motion state at end of move.
         """
         end_tai = self.azimuth_actuator.path.segments[-1].tai
@@ -219,7 +207,7 @@ class MockDome(salobj.BaseCsc):
         ----------
         in_position : `bool`
             Is the axis in position at the end of the move?
-        motion_state : `lsst.ts.idl.MTDome.MotionState`
+        motion_state : `lsst.ts.idl.MotionState`
             Motion state at end of move.
         """
         duration = self.elevation_actuator.remaining_time()
@@ -242,12 +230,12 @@ class MockDome(salobj.BaseCsc):
             return
         self.azimuth_done_task.cancel()
         self.evt_azMotion.set_put(
-            state=MTDome.MotionState.STOPPING,
+            state=MotionState.STOPPING,
             inPosition=False,
         )
         self.azimuth_done_task = asyncio.create_task(
             self.report_azimuth_done(
-                in_position=False, motion_state=MTDome.MotionState.STOPPED
+                in_position=False, motion_state=MotionState.STOPPED
             )
         )
 
@@ -263,11 +251,11 @@ class MockDome(salobj.BaseCsc):
             return
         self.elevation_done_task.cancel()
         self.evt_elMotion.set_put(
-            state=MTDome.MotionState.STOPPING,
+            state=MotionState.STOPPING,
             inPosition=False,
         )
         self.evt_elMotion.set_put(
-            state=MTDome.MotionState.STOPPED,
+            state=MotionState.STOPPED,
             inPosition=False,
         )
 
