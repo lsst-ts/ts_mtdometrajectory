@@ -6,6 +6,26 @@
 Version History
 ###############
 
+v0.8.0
+------
+
+Changes:
+
+* `MockDome` update for ts_xml 10.1, which is required.
+* Rename package to ``ts_mtdometrajectory`` and Python namespace to ``lsst.ts.mtdometrajectory``.
+* Update to use ts_utils.
+* Add a ``Jenkinsfile``.
+* Modernize unit tests to use bare asserts.
+* Test black formatting with pytest-black instead of a custom unit test.
+
+Requires:
+
+* ts_salobj 6.3
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 10.1
+
 v0.7.0
 ------
 
@@ -28,7 +48,7 @@ Changes:
 
 * Support the ``setFollowingMode`` command.
   This requires ts_xml 9.
-* `ATDomeTrajectory`: wait for the dome remote to start at startup,
+* `MTDomeTrajectory`: wait for the dome remote to start at startup,
   to avoid the CSC trying to command the dome before the remote is ready.
 * ``test_csc.py``: eliminate several race conditions in ``make_csc``
    by waiting for the extra remotes and controllers to start.
