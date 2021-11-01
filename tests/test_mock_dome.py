@@ -21,6 +21,8 @@
 
 import unittest
 
+import pytest
+
 from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
 from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
@@ -98,31 +100,31 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_azTarget)
-            self.assertAlmostEqual(data.position, position)
-            self.assertAlmostEqual(data.velocity, velocity)
+            assert data.position == pytest.approx(position)
+            assert data.velocity == pytest.approx(velocity)
 
             target_azimuth = self.csc.get_target_azimuth()
-            self.assertEqual(self.csc.azimuth_actuator.target, target_azimuth)
-            self.assertAlmostEqual(target_azimuth.position, position)
-            self.assertAlmostEqual(target_azimuth.velocity, velocity)
-            self.assertAlmostEqual(target_azimuth.tai, tai0, delta=time_slop)
+            assert self.csc.azimuth_actuator.target == target_azimuth
+            assert target_azimuth.position == pytest.approx(position)
+            assert target_azimuth.velocity == pytest.approx(velocity)
+            assert target_azimuth.tai == pytest.approx(tai0, abs=time_slop)
 
-            self.assertAlmostEqual(self.csc.azimuth_actuator.target.position, position)
-            self.assertAlmostEqual(self.csc.azimuth_actuator.target.velocity, velocity)
-            self.assertAlmostEqual(
-                self.csc.azimuth_actuator.target.tai, tai0, delta=time_slop
+            assert self.csc.azimuth_actuator.target.position == pytest.approx(position)
+            assert self.csc.azimuth_actuator.target.velocity == pytest.approx(velocity)
+            assert self.csc.azimuth_actuator.target.tai == pytest.approx(
+                tai0, abs=time_slop
             )
 
             end_segment = self.csc.azimuth_actuator.path.segments[-1]
             desired_end_position = position + velocity * (end_segment.tai - tai0)
             position_slop = velocity * time_slop
-            self.assertAlmostEqual(
-                end_segment.position, desired_end_position, delta=position_slop
+            assert end_segment.position == pytest.approx(
+                desired_end_position, abs=position_slop
             )
-            self.assertAlmostEqual(end_segment.velocity, velocity)
+            assert end_segment.velocity == pytest.approx(velocity)
             duration = end_segment.tai - tai0
             print(f"duration={duration:0.2f} seconds")
-            self.assertGreater(duration, 1)
+            assert duration > 1
 
             # Check that a new move before the slew is done is rejected
             # (though we hope the dome controller will eventually allow this).
@@ -150,7 +152,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_azTarget, velocity=0)
-            self.assertAlmostEqual(data.position, position2)
+            assert data.position == pytest.approx(position2)
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
                 state=MotionState.STOPPED,
@@ -185,13 +187,13 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
-            self.assertAlmostEqual(data.position, position)
+            assert data.position == pytest.approx(position)
 
             target_elevation = self.csc.get_target_elevation()
-            self.assertAlmostEqual(target_elevation.position, position)
+            assert target_elevation.position == pytest.approx(position)
             duration = self.csc.elevation_actuator.remaining_time()
             print(f"duration={duration:0.2f} seconds")
-            self.assertGreater(duration, 1)
+            assert duration > 1
 
             # Check that a new move before the slew is done is rejected
             # (though we hope the vendor will change to allow this).
@@ -218,7 +220,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
-            self.assertAlmostEqual(data.position, position2)
+            assert data.position == pytest.approx(position2)
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
                 state=MotionState.STOPPED,
@@ -265,11 +267,11 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
                 inPosition=False,
             )
             data = await self.assert_next_sample(self.remote.evt_azTarget)
-            self.assertAlmostEqual(data.position, az_position)
-            self.assertAlmostEqual(data.velocity, az_velocity)
+            assert data.position == pytest.approx(az_position)
+            assert data.velocity == pytest.approx(az_velocity)
 
             data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
-            self.assertAlmostEqual(data.position, el_position)
+            assert data.position == pytest.approx(el_position)
 
             assert (
                 self.csc.azimuth_actuator.kind()
@@ -317,7 +319,3 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
                 == self.csc.azimuth_actuator.Kind.Stopped
             )
             assert not self.csc.elevation_actuator.moving()
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -27,6 +27,7 @@ import os
 import pathlib
 import unittest
 
+import pytest
 import yaml
 
 from lsst.ts.idl.enums.MTDome import MotionState
@@ -79,7 +80,7 @@ class MTDomeTrajectoryTestCase(
         simulation_mode,
         settings_to_apply="",
     ):
-        self.assertEqual(simulation_mode, 0)
+        assert simulation_mode == 0
         return MTDomeTrajectory.MTDomeTrajectory(
             initial_state=initial_state,
             config_dir=config_dir,
@@ -125,7 +126,7 @@ class MTDomeTrajectoryTestCase(
                 enable=True, timeout=STD_TIMEOUT
             )
             await self.assert_next_sample(self.remote.evt_followingMode, enabled=True)
-            self.assertTrue(self.csc.following_enabled)
+            assert self.csc.following_enabled
 
             min_del_to_move = self.csc.algorithm.max_delta_elevation
             initial_azimuth = 0
@@ -185,8 +186,8 @@ class MTDomeTrajectoryTestCase(
             desired_config_dir = (
                 pathlib.Path(desird_config_pkg_dir) / "MTDomeTrajectory/v1"
             )
-            self.assertEqual(self.csc.get_config_pkg(), desired_config_pkg_name)
-            self.assertEqual(self.csc.config_dir, desired_config_dir)
+            assert self.csc.get_config_pkg() == desired_config_pkg_name
+            assert self.csc.config_dir == desired_config_dir
             await self.csc.do_exitControl(data=None)
             await asyncio.wait_for(self.csc.done_task, timeout=5)
 
@@ -194,7 +195,7 @@ class MTDomeTrajectoryTestCase(
         async with self.make_csc(
             initial_state=salobj.State.STANDBY, config_dir=TEST_CONFIG_DIR
         ):
-            self.assertEqual(self.csc.summary_state, salobj.State.STANDBY)
+            assert self.csc.summary_state == salobj.State.STANDBY
             await self.assert_next_summary_state(salobj.State.STANDBY)
 
             for bad_config_name in (
@@ -210,17 +211,16 @@ class MTDomeTrajectoryTestCase(
 
             self.remote.cmd_start.set(settingsToApply="valid.yaml")
             await self.remote.cmd_start.start(timeout=STD_TIMEOUT)
-            self.assertEqual(self.csc.summary_state, salobj.State.DISABLED)
+            assert self.csc.summary_state == salobj.State.DISABLED
             await self.assert_next_summary_state(salobj.State.DISABLED)
             settings = await self.remote.evt_algorithm.next(
                 flush=False, timeout=STD_TIMEOUT
             )
-            self.assertEqual(settings.algorithmName, "simple")
+            assert settings.algorithmName == "simple"
             # max_delta_elevation and max_delta_azimuth are hard coded
             # in data/config/valid.yaml
-            self.assertEqual(
-                yaml.safe_load(settings.algorithmConfig),
-                dict(max_delta_azimuth=7.1, max_delta_elevation=5.5),
+            assert yaml.safe_load(settings.algorithmConfig) == dict(
+                max_delta_azimuth=7.1, max_delta_elevation=5.5
             )
 
     async def assert_dome_azimuth(self, expected_azimuth, move_expected):
@@ -247,7 +247,7 @@ class MTDomeTrajectoryTestCase(
                 dome_azimuth_target.position, expected_azimuth
             )
         else:
-            with self.assertRaises(asyncio.TimeoutError):
+            with pytest.raises(asyncio.TimeoutError):
                 await self.dome_remote.evt_azTarget.next(
                     flush=False, timeout=NODATA_TIMEOUT
                 )
@@ -275,7 +275,7 @@ class MTDomeTrajectoryTestCase(
                 dome_elevation_target.position, expected_elevation
             )
         else:
-            with self.assertRaises(asyncio.TimeoutError):
+            with pytest.raises(asyncio.TimeoutError):
                 await self.dome_remote.evt_elTarget.next(
                     flush=False, timeout=NODATA_TIMEOUT
                 )
@@ -331,7 +331,7 @@ class MTDomeTrajectoryTestCase(
             f"move_elevation={move_elevation}, move_azimuth={move_azimuth}; "
             f"wait_dome_done={wait_dome_done}"
         )
-        self.assertTrue(move_azimuth or move_elevation)
+        assert move_azimuth or move_elevation
 
         # Wait until the dome is ready to receive a new MTMount target.
         await asyncio.wait_for(
@@ -352,7 +352,7 @@ class MTDomeTrajectoryTestCase(
         )
 
         follow_result = await asyncio.wait_for(follow_task, timeout=STD_TIMEOUT)
-        self.assertEqual(follow_result, (move_elevation, move_azimuth))
+        assert follow_result == (move_elevation, move_azimuth)
 
         # Check that the dome starts moving as expected.
         def expected_states(was_moving):
@@ -443,8 +443,4 @@ class MTDomeTrajectoryTestCase(
                 elevation=target_elevation, azimuth=target_azimuth, force_output=True
             )
             follow_result = await asyncio.wait_for(follow_task, timeout=STD_TIMEOUT)
-            self.assertEqual(follow_result, (False, False))
-
-
-if __name__ == "__main__":
-    unittest.main()
+            assert follow_result == (False, False)
