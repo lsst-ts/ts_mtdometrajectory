@@ -1,4 +1,5 @@
 # -*- python -*-
 from lsst.sconsUtils import scripts
+
 # Python-only package
-scripts.BasicSConstruct("ts_MTDomeTrajectory", disableCc=True)
+scripts.BasicSConstruct("ts_mtdometrajectory", disableCc=True)

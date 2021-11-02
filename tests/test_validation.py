@@ -1,4 +1,4 @@
-# This file is part of ts_MTDomeTrajectory.
+# This file is part of ts_mtdometrajectory.
 #
 # Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
@@ -22,16 +22,17 @@
 import unittest
 
 import jsonschema
+import pytest
 
 from lsst.ts import salobj
-from lsst.ts import MTDomeTrajectory
+from lsst.ts import mtdometrajectory
 
 
 class ValidationTestCase(unittest.TestCase):
     """Test validation of the config schema."""
 
     def setUp(self):
-        self.schema = MTDomeTrajectory.CONFIG_SCHEMA
+        self.schema = mtdometrajectory.CONFIG_SCHEMA
         self.validator = salobj.DefaultingValidator(schema=self.schema)
         # Values copied from the schema
         self.default_config = dict(
@@ -42,15 +43,15 @@ class ValidationTestCase(unittest.TestCase):
     def test_default(self):
         result = self.validator.validate(None)
         print("result=", result)
-        self.assertEqual(result["algorithm_name"], "simple")
-        self.assertEqual(result, self.default_config)
+        assert result["algorithm_name"] == "simple"
+        assert result == self.default_config
 
     def test_name_specified(self):
         # "simple" is the only algorithm, so we'll end up
         # with the default configuration.
         data = dict(algorithm_name="simple")
         result = self.validator.validate(data)
-        self.assertEqual(result, self.default_config)
+        assert result == self.default_config
 
     def test_all_specified(self):
         algorithm_config = dict(max_delta_azimuth=3.5, max_delta_elevation=2.2)
@@ -59,20 +60,16 @@ class ValidationTestCase(unittest.TestCase):
             simple=algorithm_config.copy(),
         )
         result = self.validator.validate(data)
-        self.assertEqual(result["algorithm_name"], "simple")
-        self.assertEqual(result["simple"], algorithm_config)
+        assert result["algorithm_name"] == "simple"
+        assert result["simple"] == algorithm_config
 
     def test_bad_algorithm_name(self):
         data = dict(algorithm_name="invalid_name")
-        with self.assertRaises(jsonschema.exceptions.ValidationError):
+        with pytest.raises(jsonschema.exceptions.ValidationError):
             self.validator.validate(data)
 
     def test_bad_algorithm_config(self):
         """The current schema only checks for a dict."""
         data = dict(algorithm_name="simple", simple=45)
-        with self.assertRaises(jsonschema.exceptions.ValidationError):
+        with pytest.raises(jsonschema.exceptions.ValidationError):
             self.validator.validate(data)
-
-
-if __name__ == "__main__":
-    unittest.main()

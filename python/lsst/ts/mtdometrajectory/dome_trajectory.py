@@ -1,4 +1,4 @@
-# This file is part of ts_MTDomeTrajectory.
+# This file is part of ts_mtdometrajectory.
 #
 # Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
@@ -26,9 +26,10 @@ import math
 
 import yaml
 
-from lsst.ts.idl.enums import MTDome
+from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
 from lsst.ts import salobj
 from lsst.ts import simactuators
+from lsst.ts import utils
 from . import __version__
 from .config_schema import CONFIG_SCHEMA
 from .elevation_azimuth import ElevationAzimuth
@@ -94,8 +95,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         # This avoids the problem of new telescope target events
         # causing unwanted motion when the dome has been commanded
         # but has not yet had a chance to report the fact.
-        self.move_dome_azimuth_task = salobj.make_done_future()
-        self.move_dome_elevation_task = salobj.make_done_future()
+        self.move_dome_azimuth_task = utils.make_done_future()
+        self.move_dome_elevation_task = utils.make_done_future()
 
         # Task that is set to (moved_elevation, moved_azimuth)
         # whenever the follow_target method runs.
@@ -148,7 +149,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         return simactuators.path.PathSegment(
             position=target.position,
             velocity=target.velocity,
-            tai=salobj.current_tai(),
+            tai=utils.current_tai(),
         )
 
     def get_dome_target_azimuth(self):
@@ -161,7 +162,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         return simactuators.path.PathSegment(
             position=target.position,
             velocity=target.velocity,
-            tai=salobj.current_tai(),
+            tai=utils.current_tai(),
         )
 
     async def configure(self, config):
@@ -290,12 +291,14 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
 
             # Stop the dome elevation axis, if moving, and wait for it to stop,
             # since the dome does not allow one move to supersede another.
-            if dome_el_motion_state.state == MTDome.MotionState.MOVING:
+            if dome_el_motion_state.state == MotionState.MOVING:
                 self.log.info("Stop existing dome elevation motion")
                 self.dome_remote.evt_elMotion.flush()
-                await self.dome_remote.cmd_stopEl.start(timeout=STD_TIMEOUT)
+                await self.dome_remote.cmd_stop.set_start(
+                    subSystemIds=SubSystemId.LWSCS, timeout=STD_TIMEOUT
+                )
 
-                while dome_el_motion_state.state != MTDome.MotionState.STOPPED:
+                while dome_el_motion_state.state != MotionState.STOPPED:
                     dome_el_motion_state = await self.dome_remote.evt_elMotion.next(
                         flush=False
                     )
@@ -338,12 +341,14 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
 
             # Stop the dome azimuth axis, if moving, and wait for it to stop,
             # since the dome does not allow one move to supersede another.
-            if dome_az_motion_state.state == MTDome.MotionState.MOVING:
+            if dome_az_motion_state.state == MotionState.MOVING:
                 self.dome_remote.evt_azMotion.flush()
                 self.log.info("Stop existing dome azimuth motion")
-                await self.dome_remote.cmd_stopAz.start(timeout=STD_TIMEOUT)
+                await self.dome_remote.cmd_stop.set_start(
+                    subSystemIds=SubSystemId.AMCS, timeout=STD_TIMEOUT
+                )
 
-                while dome_az_motion_state.state != MTDome.MotionState.STOPPED:
+                while dome_az_motion_state.state != MotionState.STOPPED:
                     dome_az_motion_state = await self.dome_remote.evt_azMotion.next(
                         flush=False
                     )

@@ -1,4 +1,4 @@
-# This file is part of ts_MTDomeTrajectory.
+# This file is part of ts_mtdometrajectory.
 #
 # Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
@@ -23,9 +23,10 @@ __all__ = ["SimpleAlgorithm"]
 
 import math
 
-from . import base_algorithm
 from lsst.ts import simactuators
 from lsst.ts import salobj
+from lsst.ts import utils
+from . import base_algorithm
 
 RAD_PER_DEG = math.pi / 180
 
@@ -70,7 +71,7 @@ class SimpleAlgorithm(base_algorithm.BaseAlgorithm):
         dome_elevation_shifted = dome_target_elevation.at(
             telescope_target.elevation.tai
         )
-        eldiff = salobj.angle_diff(
+        eldiff = utils.angle_diff(
             dome_elevation_shifted.position, telescope_target.elevation.position
         ).deg
         if abs(eldiff) < self.max_delta_elevation:
@@ -108,7 +109,7 @@ class SimpleAlgorithm(base_algorithm.BaseAlgorithm):
 
         # scaled_delta_azimuth is the difference multiplied by cos(target alt).
         dome_azimuth_shifted = dome_target_azimuth.at(telescope_target.azimuth.tai)
-        scaled_delta_azimuth = salobj.angle_diff(
+        scaled_delta_azimuth = utils.angle_diff(
             telescope_target.azimuth.position, dome_azimuth_shifted.position
         ).deg * math.cos(telescope_target.elevation.position * RAD_PER_DEG)
         if abs(scaled_delta_azimuth) < self.max_delta_azimuth:

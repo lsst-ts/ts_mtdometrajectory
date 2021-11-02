@@ -1,4 +1,4 @@
-# This file is part of ts_MTDomeTrajectory.
+# This file is part of ts_mtdometrajectory.
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project

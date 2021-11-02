@@ -1,6 +1,6 @@
-.. py:currentmodule:: lsst.ts.MTDomeTrajectory
+.. py:currentmodule:: lsst.ts.mtdometrajectory
 
-.. _lsst.ts.MTDomeTrajectory.developer_guide:
+.. _lsst.ts.mtdometrajectory.developer_guide:
 
 ###############
 Developer Guide
@@ -8,7 +8,7 @@ Developer Guide
 
 The MTDomeTrajectory CSC is implemented using `ts_salobj <https://github.com/lsst-ts/ts_salobj>`_.
 
-.. _lsst.ts.MTDomeTrajectory-api:
+.. _lsst.ts.mtdometrajectory-api:
 
 API
 ===
@@ -19,10 +19,10 @@ The primary classes are:
 * `BaseAlgorithm`: base class for motion algorithms.
 * `SimpleAlgorithm`: a simple motion algorithm.
 
-.. automodapi:: lsst.ts.MTDomeTrajectory
+.. automodapi:: lsst.ts.mtdometrajectory
    :no-main-docstr:
 
-.. _lsst.ts.MTDomeTrajectory-build_and_test:
+.. _lsst.ts.mtdometrajectory-build_and_test:
 
 Build and Test
 ==============
@@ -37,10 +37,10 @@ There is nothing to build except the documentation.
     pytest -v  # to run tests
     package-docs clean; package-docs build  # to build the documentation
 
-.. _lsst.ts.MTDomeTrajectory-contributing:
+.. _lsst.ts.mtdometrajectory-contributing:
 
 Contributing
 ============
 
-``lsst.ts.MTDomeTrajectory`` is developed at https://github.com/lsst-ts/ts_MTDomeTrajectory.
-You can find Jira issues for this module using `labels=ts_MTDomeTrajectory <https://jira.lsstcorp.org/issues/?jql=project%20%3D%20DM%20AND%20labels%20%20%3D%20ts_MTDomeTrajectory>`_.
+``lsst.ts.mtdometrajectory`` is developed at https://github.com/lsst-ts/ts_mtdometrajectory.
+You can find Jira issues for this module using `labels=ts_mtdometrajectory <https://jira.lsstcorp.org/issues/?jql=project%20%3D%20DM%20AND%20labels%20%20%3D%20ts_mtdometrajectory>`_.
