@@ -1,4 +1,4 @@
-# This file is part of ts_MTDomeTrajectory.
+# This file is part of ts_mtdometrajectory.
 #
 # Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
@@ -25,14 +25,14 @@ import jsonschema
 import pytest
 
 from lsst.ts import salobj
-from lsst.ts import MTDomeTrajectory
+from lsst.ts import mtdometrajectory
 
 
 class ValidationTestCase(unittest.TestCase):
     """Test validation of the config schema."""
 
     def setUp(self):
-        self.schema = MTDomeTrajectory.CONFIG_SCHEMA
+        self.schema = mtdometrajectory.CONFIG_SCHEMA
         self.validator = salobj.DefaultingValidator(schema=self.schema)
         # Values copied from the schema
         self.default_config = dict(

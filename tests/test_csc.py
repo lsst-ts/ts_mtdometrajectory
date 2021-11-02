@@ -1,4 +1,4 @@
-# This file is part of ts_MTDomeTrajectory.
+# This file is part of ts_mtdometrajectory.
 #
 # Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
@@ -31,7 +31,7 @@ import pytest
 import yaml
 
 from lsst.ts.idl.enums.MTDome import MotionState
-from lsst.ts import MTDomeTrajectory
+from lsst.ts import mtdometrajectory
 from lsst.ts import salobj
 from lsst.ts import utils
 
@@ -65,7 +65,7 @@ class MTDomeTrajectoryTestCase(
             settings_to_apply=settings_to_apply,
             simulation_mode=simulation_mode,
             log_level=log_level,
-        ), MTDomeTrajectory.MockDome(
+        ), mtdometrajectory.MockDome(
             initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
         ) as self.dome_csc, salobj.Remote(
             domain=self.dome_csc.domain, name="MTDome"
@@ -82,7 +82,7 @@ class MTDomeTrajectoryTestCase(
         settings_to_apply="",
     ):
         assert simulation_mode == 0
-        return MTDomeTrajectory.MTDomeTrajectory(
+        return mtdometrajectory.MTDomeTrajectory(
             initial_state=initial_state,
             config_dir=config_dir,
             settings_to_apply=settings_to_apply,
@@ -101,7 +101,7 @@ class MTDomeTrajectoryTestCase(
         async with self.make_csc(initial_state=salobj.State.STANDBY):
             await self.assert_next_sample(
                 topic=self.remote.evt_softwareVersions,
-                cscVersion=MTDomeTrajectory.__version__,
+                cscVersion=mtdometrajectory.__version__,
                 subsystemVersions="",
             )
 

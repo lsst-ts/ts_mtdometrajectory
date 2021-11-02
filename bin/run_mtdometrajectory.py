@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# This file is part of ts_MTDomeTrajectory.
+# This file is part of ts_mtdometrajectory.
 #
 # Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
@@ -21,6 +21,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import asyncio
 
-from lsst.ts import MTDomeTrajectory
+from lsst.ts.mtdometrajectory import MTDomeTrajectory
 
-asyncio.run(MTDomeTrajectory.MTDomeTrajectory.amain(index=None))
+asyncio.run(MTDomeTrajectory.amain(index=None))

@@ -1,4 +1,4 @@
-# This file is part of ts_MTDomeTrajectory.
+# This file is part of ts_mtdometrajectory.
 #
 # Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
@@ -26,7 +26,7 @@ import yaml
 CONFIG_SCHEMA = yaml.safe_load(
     """
 $schema: http://json-schema.org/draft-07/schema#
-$id: https://github.com/lsst-ts/ts_MTDomeTrajectory/blob/master/python/lsst/ts/MTDomeTrajectory/config_schema.py  # noqa
+$id: https://github.com/lsst-ts/ts_mtdometrajectory/blob/master/python/lsst/ts/mtdometrajectory/config_schema.py  # noqa
 # title must end with one or more spaces followed by the schema version, which must begin with "v"
 title: MTDomeTrajectory v1
 description: Schema for MTDomeTrajectory configuration files

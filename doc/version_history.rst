@@ -1,6 +1,6 @@
-.. py:currentmodule:: lsst.ts.MTDomeTrajectory
+.. py:currentmodule:: lsst.ts.mtdometrajectory
 
-.. _lsst.ts.MTDomeTrajectory.version_history:
+.. _lsst.ts.mtdometrajectory.version_history:
 
 ###############
 Version History

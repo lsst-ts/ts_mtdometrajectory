@@ -1,4 +1,4 @@
-# This file is part of ts_MTDomeTrajectory.
+# This file is part of ts_mtdometrajectory.
 #
 # Developed for Vera C. Rubin Observatory Telescope and Site Systems.
 # This product includes software developed by the LSST Project
@@ -24,7 +24,7 @@ import unittest
 import pytest
 
 from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
-from lsst.ts import MTDomeTrajectory
+from lsst.ts import mtdometrajectory
 from lsst.ts import salobj
 from lsst.ts import utils
 
@@ -40,7 +40,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
             because in normal operation the initial state is the current state
             of the controller.
         """
-        return MTDomeTrajectory.MockDome(initial_state=initial_state)
+        return mtdometrajectory.MockDome(initial_state=initial_state)
 
     async def test_initial_output(self):
         async with self.make_csc(initial_state=salobj.State.ENABLED):

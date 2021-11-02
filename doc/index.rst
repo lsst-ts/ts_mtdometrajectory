@@ -1,9 +1,9 @@
-.. py:currentmodule:: lsst.ts.MTDomeTrajectory
+.. py:currentmodule:: lsst.ts.mtdometrajectory
 
-.. _lsst.ts.MTDomeTrajectory:
+.. _lsst.ts.mtdometrajectory:
 
 ########################
-lsst.ts.MTDomeTrajectory
+lsst.ts.mtdometrajectory
 ########################
 
 .. image:: https://img.shields.io/badge/Project Metadata-gray.svg
@@ -11,9 +11,9 @@ lsst.ts.MTDomeTrajectory
 .. image:: https://img.shields.io/badge/SAL\ Interface-gray.svg
     :target: https://ts-xml.lsst.io/sal_interfaces/MTDomeTrajectory.html
 .. image:: https://img.shields.io/badge/GitHub-gray.svg
-    :target: https://github.com/lsst-ts/ts_MTDomeTrajectory
+    :target: https://github.com/lsst-ts/ts_mtdometrajectory
 .. image:: https://img.shields.io/badge/Jira-gray.svg
-    :target: https://jira.lsstcorp.org/issues/?jql=labels+%3D+ts_MTDomeTrajectory
+    :target: https://jira.lsstcorp.org/issues/?jql=labels+%3D+ts_mtdometrajectory
 
 Overview
 ========
@@ -27,7 +27,7 @@ MTDomeTrajectory supports multiple algorithms for determining how to move the do
 .. _MTDome CSC: https://ts-mtdome.lsst.io
 .. _MTMount CSC: https://ts-mtmount.lsst.io
 
-.. _lsst.ts.MTDomeTrajectory-user_guide:
+.. _lsst.ts.mtdometrajectory-user_guide:
 
 User Guide
 ==========
@@ -49,7 +49,7 @@ To move the dome to a specified position that is different from the telescope:
 
 MTDomeTrajectory can support multiple algorithms for making the dome follow the telescope;
 but at the time of this writing, there is only one.
-The algorithm is specified and configured in :ref:`configuration <lsst.ts.MTDomeTrajectory-configuration>`.
+The algorithm is specified and configured in :ref:`configuration <lsst.ts.mtdometrajectory-configuration>`.
 
 .. _setEnabledMode command: https://ts-xml.lsst.io/sal_interfaces/MTDomeTrajectory.html#setenabledmode
 .. _moveAz command: https://ts-xml.lsst.io/sal_interfaces/MTDome.html#moveaz
@@ -61,15 +61,15 @@ Simulation
 MTDomeTrajectory can be fully exercised without hardware by running the `MTMount CSC`_ and `MTDome CSC`_ in simulation mode.
 MTDomeTrajectory does not have a simulation mode of its own.
 
-.. _lsst.ts.MTDomeTrajectory-configuration:
+.. _lsst.ts.mtdometrajectory-configuration:
 
 Configuration
 -------------
 
-Configuration is defined by `CONFIG_SCHEMA <https://github.com/lsst-ts/ts_MTDomeTrajectory/blob/develop/python/lsst/ts/MTDomeTrajectory/config_schema.py>`_.
+Configuration is defined by `CONFIG_SCHEMA <https://github.com/lsst-ts/ts_mtdometrajectory/blob/develop/python/lsst/ts/mtdometrajectory/config_schema.py>`_.
 Configuration primarily consists of specifying the control algorithm and its associated parameters.
 
-.. _lsst.ts.MTDomeTrajectory-configuration-algorithms:
+.. _lsst.ts.mtdometrajectory-configuration-algorithms:
 
 Available algorithms:
 

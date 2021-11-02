@@ -10,10 +10,10 @@ __version__ = "{version}"
 """
 
 setuptools.setup(
-    name="ts_MTDomeTrajectory",
+    name="ts_mtdometrajectory",
     description="CSC that sends target commands to the dome to follow the mount",
     use_scm_version={
-        "write_to": "python/lsst/ts/MTDomeTrajectory/version.py",
+        "write_to": "python/lsst/ts/mtdometrajectory/version.py",
         "write_to_template": scm_version_template,
     },
     setup_requires=["setuptools_scm", "pytest-runner"],
@@ -27,6 +27,6 @@ setuptools.setup(
     license="GPL",
     project_urls={
         "Bug Tracker": "https://jira.lsstcorp.org/secure/Dashboard.jspa",
-        "Source Code": "https://github.com/lsst-ts/ts_MTDomeTrajectory",
+        "Source Code": "https://github.com/lsst-ts/ts_mtdometrajectory",
     },
 )
