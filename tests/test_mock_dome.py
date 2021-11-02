@@ -24,8 +24,9 @@ import unittest
 import pytest
 
 from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
-from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
+from lsst.ts import salobj
+from lsst.ts import utils
 
 STD_TIMEOUT = 60
 
@@ -88,11 +89,11 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
 
             position = 2
             velocity = 0.1
-            tai0 = salobj.current_tai()
+            tai0 = utils.current_tai()
             await self.remote.cmd_moveAz.set_start(
                 position=position, velocity=velocity, timeout=STD_TIMEOUT
             )
-            time_slop = salobj.current_tai() - tai0
+            time_slop = utils.current_tai() - tai0
 
             await self.assert_next_sample(
                 self.remote.evt_azMotion,

@@ -26,6 +26,7 @@ import asyncio
 from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
 from lsst.ts import salobj
 from lsst.ts import simactuators
+from lsst.ts import utils
 
 
 class MockDome(salobj.BaseCsc):
@@ -73,9 +74,9 @@ class MockDome(salobj.BaseCsc):
             dtmax_track=0,
         )
         self.telemetry_interval = 0.2  # seconds
-        self.telemetry_loop_task = salobj.make_done_future()
-        self.elevation_done_task = salobj.make_done_future()
-        self.azimuth_done_task = salobj.make_done_future()
+        self.telemetry_loop_task = utils.make_done_future()
+        self.elevation_done_task = utils.make_done_future()
+        self.azimuth_done_task = utils.make_done_future()
 
         # Add do methods for unsupported commands
         for name in (
@@ -149,7 +150,7 @@ class MockDome(salobj.BaseCsc):
         self.azimuth_actuator.set_target(
             position=data.position,
             velocity=data.velocity,
-            tai=salobj.current_tai(),
+            tai=utils.current_tai(),
         )
         self.evt_azTarget.set_put(
             position=data.position, velocity=data.velocity, force_output=True
@@ -192,7 +193,7 @@ class MockDome(salobj.BaseCsc):
             Motion state at end of move.
         """
         end_tai = self.azimuth_actuator.path.segments[-1].tai
-        duration = end_tai - salobj.current_tai()
+        duration = end_tai - utils.current_tai()
         if duration > 0:
             await asyncio.sleep(duration)
         self.evt_azMotion.set_put(
@@ -262,7 +263,7 @@ class MockDome(salobj.BaseCsc):
     async def telemetry_loop(self):
         try:
             while True:
-                tai = salobj.current_tai()
+                tai = utils.current_tai()
                 azimuth_target = self.azimuth_actuator.target.at(tai)
                 azimuth_actual = self.azimuth_actuator.path.at(tai)
                 self.tel_azimuth.set_put(

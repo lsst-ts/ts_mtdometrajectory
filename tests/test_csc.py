@@ -31,8 +31,9 @@ import pytest
 import yaml
 
 from lsst.ts.idl.enums.MTDome import MotionState
-from lsst.ts import salobj
 from lsst.ts import MTDomeTrajectory
+from lsst.ts import salobj
+from lsst.ts import utils
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -243,7 +244,7 @@ class MTDomeTrajectoryTestCase(
             dome_azimuth_target = await self.dome_remote.evt_azTarget.next(
                 flush=False, timeout=STD_TIMEOUT
             )
-            salobj.assertAnglesAlmostEqual(
+            utils.assert_angles_almost_equal(
                 dome_azimuth_target.position, expected_azimuth
             )
         else:
@@ -271,7 +272,7 @@ class MTDomeTrajectoryTestCase(
             dome_elevation_target = await self.dome_remote.evt_elTarget.next(
                 flush=False, timeout=STD_TIMEOUT
             )
-            salobj.assertAnglesAlmostEqual(
+            utils.assert_angles_almost_equal(
                 dome_elevation_target.position, expected_elevation
             )
         else:
@@ -281,10 +282,10 @@ class MTDomeTrajectoryTestCase(
                 )
 
     def assert_telescope_target(self, expected_elevation, expected_azimuth):
-        salobj.assertAnglesAlmostEqual(
+        utils.assert_angles_almost_equal(
             self.csc.telescope_target.elevation.position, expected_elevation
         )
-        salobj.assertAnglesAlmostEqual(
+        utils.assert_angles_almost_equal(
             self.csc.telescope_target.azimuth.position, expected_azimuth
         )
 

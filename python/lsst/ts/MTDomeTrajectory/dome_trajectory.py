@@ -29,6 +29,7 @@ import yaml
 from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
 from lsst.ts import salobj
 from lsst.ts import simactuators
+from lsst.ts import utils
 from . import __version__
 from .config_schema import CONFIG_SCHEMA
 from .elevation_azimuth import ElevationAzimuth
@@ -94,8 +95,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         # This avoids the problem of new telescope target events
         # causing unwanted motion when the dome has been commanded
         # but has not yet had a chance to report the fact.
-        self.move_dome_azimuth_task = salobj.make_done_future()
-        self.move_dome_elevation_task = salobj.make_done_future()
+        self.move_dome_azimuth_task = utils.make_done_future()
+        self.move_dome_elevation_task = utils.make_done_future()
 
         # Task that is set to (moved_elevation, moved_azimuth)
         # whenever the follow_target method runs.
@@ -148,7 +149,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         return simactuators.path.PathSegment(
             position=target.position,
             velocity=target.velocity,
-            tai=salobj.current_tai(),
+            tai=utils.current_tai(),
         )
 
     def get_dome_target_azimuth(self):
@@ -161,7 +162,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         return simactuators.path.PathSegment(
             position=target.position,
             velocity=target.velocity,
-            tai=salobj.current_tai(),
+            tai=utils.current_tai(),
         )
 
     async def configure(self, config):
