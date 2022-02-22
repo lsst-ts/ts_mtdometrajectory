@@ -33,35 +33,14 @@ class ValidationTestCase(unittest.TestCase):
 
     def setUp(self):
         self.schema = mtdometrajectory.CONFIG_SCHEMA
-        self.validator = salobj.DefaultingValidator(schema=self.schema)
-        # Values copied from the schema
-        self.default_config = dict(
-            algorithm_name="simple",
-            simple=dict(max_delta_azimuth=5, max_delta_elevation=6),
-        )
+        self.validator = salobj.StandardValidator(schema=self.schema)
 
-    def test_default(self):
-        result = self.validator.validate(None)
-        print("result=", result)
-        assert result["algorithm_name"] == "simple"
-        assert result == self.default_config
-
-    def test_name_specified(self):
-        # "simple" is the only algorithm, so we'll end up
-        # with the default configuration.
-        data = dict(algorithm_name="simple")
-        result = self.validator.validate(data)
-        assert result == self.default_config
-
-    def test_all_specified(self):
-        algorithm_config = dict(max_delta_azimuth=3.5, max_delta_elevation=2.2)
+    def test_basics(self):
         data = dict(
             algorithm_name="simple",
-            simple=algorithm_config.copy(),
+            simple=dict(max_delta_azimuth=3.5, max_delta_elevation=2.2),
         )
-        result = self.validator.validate(data)
-        assert result["algorithm_name"] == "simple"
-        assert result["simple"] == algorithm_config
+        self.validator.validate(data)
 
     def test_bad_algorithm_name(self):
         data = dict(algorithm_name="invalid_name")

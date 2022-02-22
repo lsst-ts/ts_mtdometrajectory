@@ -55,14 +55,14 @@ class MTDomeTrajectoryTestCase(
         initial_state,
         config_dir=None,
         initial_elevation=0,
-        settings_to_apply="",
+        override="",
         simulation_mode=0,
         log_level=None,
     ):
         async with super().make_csc(
             initial_state=initial_state,
             config_dir=config_dir,
-            settings_to_apply=settings_to_apply,
+            override=override,
             simulation_mode=simulation_mode,
             log_level=log_level,
         ), mtdometrajectory.MockDome(
@@ -79,13 +79,13 @@ class MTDomeTrajectoryTestCase(
         initial_state,
         config_dir,
         simulation_mode,
-        settings_to_apply="",
+        override="",
     ):
         assert simulation_mode == 0
         return mtdometrajectory.MTDomeTrajectory(
             initial_state=initial_state,
             config_dir=config_dir,
-            settings_to_apply=settings_to_apply,
+            override=override,
         )
 
     async def test_bin_script(self):
@@ -171,7 +171,7 @@ class MTDomeTrajectoryTestCase(
             # Pretend the telescope is pointing 180 deg away from the dome;
             # that is more than enough to trigger a dome move, if following.
             new_telescope_azimuth = self.dome_csc.get_target_azimuth().position + 180
-            self.mtmount_controller.evt_target.set_put(
+            await self.mtmount_controller.evt_target.set_write(
                 elevation=elevation, azimuth=new_telescope_azimuth, force_output=True
             )
             await self.assert_dome_azimuth(
@@ -185,7 +185,7 @@ class MTDomeTrajectoryTestCase(
             desired_config_env_name = desired_config_pkg_name.upper() + "_DIR"
             desird_config_pkg_dir = os.environ[desired_config_env_name]
             desired_config_dir = (
-                pathlib.Path(desird_config_pkg_dir) / "MTDomeTrajectory/v1"
+                pathlib.Path(desird_config_pkg_dir) / "MTDomeTrajectory/v2"
             )
             assert self.csc.get_config_pkg() == desired_config_pkg_name
             assert self.csc.config_dir == desired_config_dir
@@ -206,11 +206,11 @@ class MTDomeTrajectoryTestCase(
                 "invalid_bad_max_daz.yaml",
             ):
                 with self.subTest(bad_config_name=bad_config_name):
-                    self.remote.cmd_start.set(settingsToApply=bad_config_name)
+                    self.remote.cmd_start.set(configurationOverride=bad_config_name)
                     with salobj.assertRaisesAckError():
                         await self.remote.cmd_start.start(timeout=STD_TIMEOUT)
 
-            self.remote.cmd_start.set(settingsToApply="valid.yaml")
+            self.remote.cmd_start.set(configurationOverride="valid.yaml")
             await self.remote.cmd_start.start(timeout=STD_TIMEOUT)
             assert self.csc.summary_state == salobj.State.DISABLED
             await self.assert_next_summary_state(salobj.State.DISABLED)
@@ -348,7 +348,7 @@ class MTDomeTrajectoryTestCase(
 
         # Set telescope target
         follow_task = self.csc.make_follow_task()
-        self.mtmount_controller.evt_target.set_put(
+        await self.mtmount_controller.evt_target.set_write(
             elevation=elevation, azimuth=azimuth, force_output=True
         )
 
@@ -440,7 +440,7 @@ class MTDomeTrajectoryTestCase(
             (dome_target_elevation.position, dome_target_azimuth.position),
         ):
             follow_task = self.csc.make_follow_task()
-            self.mtmount_controller.evt_target.set_put(
+            await self.mtmount_controller.evt_target.set_write(
                 elevation=target_elevation, azimuth=target_azimuth, force_output=True
             )
             follow_result = await asyncio.wait_for(follow_task, timeout=STD_TIMEOUT)

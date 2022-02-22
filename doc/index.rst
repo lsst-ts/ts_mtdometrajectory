@@ -77,19 +77,6 @@ Available algorithms:
 
 Configuration files live in `ts_config_mttcs/MTDomeTrajectory <https://github.com/lsst-ts/ts_config_mttcs/tree/develop/MTDomeTrajectory>`_.
 
-Here is a sample configuration file that specifies all fields::
-
-    # We strongly suggest that you specify the algorithm name
-    # if you override any of the algorithm's default configuration.
-    # That way your configuration file will continue to work
-    # even if the default algorithm changes.
-    algorithm_name: "simple"
-    algorithm_config:
-      # These two values are arbitrary and merely for illustration.
-      # Either or both can be omitted, and the defaults are reasonable.
-      max_delta_azimuth: 3.5
-      max_delta_elevation: 4
-
 Developer Guide
 ===============
 
