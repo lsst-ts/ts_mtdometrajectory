@@ -57,7 +57,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         - State.ENABLED if you want the CSC immediately usable.
         - State.STANDBY if you want full emulation of a CSC.
     override : `str`, optional
-        Configuration override file to use if ``initial_state`` is
+        Configuration override file to apply if ``initial_state`` is
         `State.DISABLED` or `State.ENABLED`.
     """
 
