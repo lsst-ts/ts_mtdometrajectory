@@ -96,11 +96,11 @@ class MockDome(salobj.BaseCsc):
 
     async def start(self):
         await super().start()
-        self.evt_azMotion.set_put(
+        await self.evt_azMotion.set_write(
             state=MotionState.STOPPED,
             inPosition=False,
         )
-        self.evt_elMotion.set_put(
+        await self.evt_elMotion.set_write(
             state=MotionState.STOPPED,
             inPosition=False,
         )
@@ -108,8 +108,8 @@ class MockDome(salobj.BaseCsc):
     async def close_tasks(self):
         await super().close_tasks()
         self.telemetry_loop_task.cancel()
-        self.stop_azimuth()
-        self.stop_elevation()
+        await self.stop_azimuth()
+        await self.stop_elevation()
 
     def get_target_elevation(self):
         """Get the target elevation as an
@@ -127,13 +127,15 @@ class MockDome(salobj.BaseCsc):
         """
         return self.azimuth_actuator.target
 
-    def do_moveEl(self, data):
+    async def do_moveEl(self, data):
         self.assert_enabled()
         if not self.elevation_done_task.done():
             raise salobj.ExpectedError("Elevation slew not done.")
         self.elevation_actuator.set_position(position=data.position)
-        self.evt_elTarget.set_put(position=data.position, velocity=0, force_output=True)
-        self.evt_elMotion.set_put(
+        await self.evt_elTarget.set_write(
+            position=data.position, velocity=0, force_output=True
+        )
+        await self.evt_elMotion.set_write(
             state=MotionState.MOVING,
             inPosition=False,
         )
@@ -143,7 +145,7 @@ class MockDome(salobj.BaseCsc):
             )
         )
 
-    def do_moveAz(self, data):
+    async def do_moveAz(self, data):
         self.assert_enabled()
         if not self.azimuth_done_task.done():
             raise salobj.ExpectedError("Azimuth slew not done.")
@@ -152,10 +154,10 @@ class MockDome(salobj.BaseCsc):
             velocity=data.velocity,
             tai=utils.current_tai(),
         )
-        self.evt_azTarget.set_put(
+        await self.evt_azTarget.set_write(
             position=data.position, velocity=data.velocity, force_output=True
         )
-        self.evt_azMotion.set_put(
+        await self.evt_azMotion.set_write(
             state=MotionState.MOVING,
             inPosition=False,
         )
@@ -166,12 +168,12 @@ class MockDome(salobj.BaseCsc):
             self.report_azimuth_done(in_position=True, motion_state=end_motion_state)
         )
 
-    def do_stop(self, data):
+    async def do_stop(self, data):
         self.assert_enabled()
         if data.subSystemIds & SubSystemId.AMCS:
-            self.stop_azimuth()
+            await self.stop_azimuth()
         if data.subSystemIds & SubSystemId.LWSCS:
-            self.stop_elevation()
+            await self.stop_elevation()
 
     async def handle_summary_state(self):
         if self.disabled_or_enabled:
@@ -179,8 +181,8 @@ class MockDome(salobj.BaseCsc):
                 self.telemetry_loop_task = asyncio.create_task(self.telemetry_loop())
         else:
             self.telemetry_loop_task.cancel()
-            self.stop_azimuth()
-            self.stop_elevation()
+            await self.stop_azimuth()
+            await self.stop_elevation()
 
     async def report_azimuth_done(self, in_position, motion_state):
         """Wait for azimuth to stop moving and report evt_azMotion.
@@ -196,7 +198,7 @@ class MockDome(salobj.BaseCsc):
         duration = end_tai - utils.current_tai()
         if duration > 0:
             await asyncio.sleep(duration)
-        self.evt_azMotion.set_put(
+        await self.evt_azMotion.set_write(
             state=motion_state,
             inPosition=in_position,
         )
@@ -214,12 +216,12 @@ class MockDome(salobj.BaseCsc):
         duration = self.elevation_actuator.remaining_time()
         if duration > 0:
             await asyncio.sleep(duration)
-        self.evt_elMotion.set_put(
+        await self.evt_elMotion.set_write(
             state=motion_state,
             inPosition=in_position,
         )
 
-    def stop_azimuth(self):
+    async def stop_azimuth(self):
         """Stop the azimuth actuator and the done task.
 
         Report not in position, if changed.
@@ -230,7 +232,7 @@ class MockDome(salobj.BaseCsc):
         if self.azimuth_done_task.done():
             return
         self.azimuth_done_task.cancel()
-        self.evt_azMotion.set_put(
+        await self.evt_azMotion.set_write(
             state=MotionState.STOPPING,
             inPosition=False,
         )
@@ -240,7 +242,7 @@ class MockDome(salobj.BaseCsc):
             )
         )
 
-    def stop_elevation(self):
+    async def stop_elevation(self):
         """Stop the elevation actuator and the done task.
 
         Report not in position, if changed.
@@ -251,11 +253,11 @@ class MockDome(salobj.BaseCsc):
         if self.elevation_done_task.done():
             return
         self.elevation_done_task.cancel()
-        self.evt_elMotion.set_put(
+        await self.evt_elMotion.set_write(
             state=MotionState.STOPPING,
             inPosition=False,
         )
-        self.evt_elMotion.set_put(
+        await self.evt_elMotion.set_write(
             state=MotionState.STOPPED,
             inPosition=False,
         )
@@ -266,14 +268,14 @@ class MockDome(salobj.BaseCsc):
                 tai = utils.current_tai()
                 azimuth_target = self.azimuth_actuator.target.at(tai)
                 azimuth_actual = self.azimuth_actuator.path.at(tai)
-                self.tel_azimuth.set_put(
+                await self.tel_azimuth.set_write(
                     positionActual=azimuth_actual.position,
                     positionCommanded=azimuth_target.position,
                     velocityActual=azimuth_actual.velocity,
                     velocityCommanded=azimuth_target.velocity,
                 )
 
-                self.tel_lightWindScreen.set_put(
+                await self.tel_lightWindScreen.set_write(
                     positionActual=self.elevation_actuator.position(tai),
                     positionCommanded=self.elevation_actuator.end_position,
                     velocityActual=self.elevation_actuator.velocity(tai),

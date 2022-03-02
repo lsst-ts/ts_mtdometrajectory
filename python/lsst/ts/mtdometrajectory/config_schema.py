@@ -28,17 +28,14 @@ CONFIG_SCHEMA = yaml.safe_load(
 $schema: http://json-schema.org/draft-07/schema#
 $id: https://github.com/lsst-ts/ts_mtdometrajectory/blob/master/python/lsst/ts/mtdometrajectory/config_schema.py  # noqa
 # title must end with one or more spaces followed by the schema version, which must begin with "v"
-title: MTDomeTrajectory v1
+title: MTDomeTrajectory v2
 description: Schema for MTDomeTrajectory configuration files
 type: object
 properties:
   algorithm_name:
     type: string
     enum:
-    - simple
-    default: simple
-  algorithm_config:
-    type: object
+      - simple
   simple:
     description: Configuration for the "simple" algorithm.
     type: object
@@ -47,18 +44,19 @@ properties:
         type: number
         description: ->
           Maximum difference between dome and telescope azimuth before moving the dome (deg).
-          The default value is nearly where the dome vignettes the telescope.
-        default: 5
+          The desired value is nearly where the dome vignettes the telescope.
       max_delta_elevation:
         type: number
         description: ->
           Maximum difference between dome and telescope elevation before moving the dome (deg)
-          The default value is nearly where the dome vignettes the telescope.
-        default: 6
+          The desired value is nearly where the dome vignettes the telescope.
     required:
-    - max_delta_azimuth
-    - max_delta_elevation
+      - max_delta_azimuth
+      - max_delta_elevation
     additionalProperties: false
+required:
+  - algorithm_name
+  - simple
 additionalProperties: false
 """
 )
