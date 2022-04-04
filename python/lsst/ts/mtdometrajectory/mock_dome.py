@@ -80,16 +80,18 @@ class MockDome(salobj.BaseCsc):
 
         # Add do methods for unsupported commands
         for name in (
+            "closeLouvers",
+            "closeShutter",
             "crawlAz",
             "crawlEl",
             "exitFault",
-            "park",
-            "setLouvers",
-            "closeLouvers",
-            "closeShutter",
             "openShutter",
+            "park",
+            "resetDrivesAz",
+            "setLouvers",
             "setOperationalMode",
             "setTemperature",
+            "setZeroAz",
         ):
             setattr(self, f"do_{name}", self._unsupportedCommand)
         super().__init__(name="MTDome", index=None, initial_state=initial_state)
