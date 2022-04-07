@@ -6,6 +6,21 @@
 Version History
 ###############
 
+v0.9.2
+------
+
+Changes:
+
+* Fix the case of the UPS file (was ts_MTDomeTrajectory.table).
+
+Requires:
+
+* ts_salobj 7
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 11.1
+
 v0.9.1
 ------
 
@@ -13,6 +28,8 @@ Changes:
 
 * Update for ts_xml 11.1, which is required.
   `MockDome`: ignore two additional commands.
+
+Requires:
 
 * ts_salobj 7
 * ts_config_mttcs
