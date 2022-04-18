@@ -6,6 +6,21 @@
 Version History
 ###############
 
+v0.9.3
+------
+
+Change:
+
+* Modernize the Jenkinsfile.
+
+Requires:
+
+* ts_salobj 7
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 11.1
+
 v0.9.2
 ------
 
