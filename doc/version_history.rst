@@ -6,6 +6,22 @@
 Version History
 ###############
 
+v0.10.0
+-------
+
+Change:
+
+* Rename command-line scripts to remove ".py" suffix.
+* Build with pyproject.toml.
+
+Requires:
+
+* ts_salobj 7
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 11.1
+
 v0.9.3
 ------
 
