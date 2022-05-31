@@ -3,7 +3,7 @@ config.log
 .sconf_temp
 *.cfgc
 *.pyc
-ospl-*.log
+*.log
 
 # Built by sconsUtils
 version.py
@@ -12,5 +12,9 @@ version.py
 .coverage
 tests/.tests
 pytest_session.txt
-.cache/
+.cache
+.hypothesis
 .pytest_cache
+
+# Editors
+.vscode
