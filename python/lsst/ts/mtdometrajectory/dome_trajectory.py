@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-__all__ = ["MTDomeTrajectory"]
+__all__ = ["MTDomeTrajectory", "run_mtdometrajectory"]
 
 import asyncio
 import math
@@ -372,3 +372,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     async def start(self):
         await super().start()
         await self.dome_remote.start_task
+
+
+def run_mtdometrajectory():
+    asyncio.run(MTDomeTrajectory.amain(index=None))

@@ -36,7 +36,7 @@ Start the MTDomeTrajectory CSC as follows:
 
 .. prompt:: bash
 
-    run_mtdometrajectory.py
+    run_mtdometrajectory
 
 Stop the CSC by sending it to the OFFLINE state.
 
