@@ -1,2 +1,2 @@
 @Library('JenkinsShared')_
-CondaPipeline(["ts_config_mttcs"], "ts-mtdometrajectory", "lsst.ts.mtdometrajectory")
+CondaPipeline(["ts_config_mttcs"], "ts-mtdometrajectory", "lsst.ts.mtdometrajectory", "noarch")
