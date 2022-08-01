@@ -88,6 +88,8 @@ class MockDome(salobj.BaseCsc):
             "openShutter",
             "park",
             "resetDrivesAz",
+            "resetDrivesShutter",
+            "searchZeroShutter",
             "setLouvers",
             "setOperationalMode",
             "setTemperature",

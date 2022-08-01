@@ -6,6 +6,23 @@
 Version History
 ###############
 
+v0.11.0
+-------
+
+Change:
+
+* `MockDome`: add two new (unsupported) commands.
+  This requires ts_xml 12.1.
+* ``Jenkinsfile``: change HOME to WHOME in most of it, to work with modern git.
+
+Requires:
+
+* ts_salobj 7
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 12.1
+
 v0.10.0
 -------
 
