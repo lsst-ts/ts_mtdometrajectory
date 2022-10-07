@@ -89,7 +89,7 @@ class MockDome(salobj.BaseCsc):
             "park",
             "resetDrivesAz",
             "resetDrivesShutter",
-            "searchZeroShutter",
+            "home",
             "setLouvers",
             "setOperationalMode",
             "setTemperature",
