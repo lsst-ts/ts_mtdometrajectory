@@ -9,15 +9,13 @@ Version History
 v0.11.0
 -------
 
-Change:
-
-* `MockDome`: add two new (unsupported) commands.
-  This requires ts_xml 12.1.
+* `MockDome`: use ``allow_missing_commands`` to simplify the code.
+  This requires ts_salobj 7.2.
 * ``Jenkinsfile``: change HOME to WHOME in most of it, to work with modern git.
 
 Requires:
 
-* ts_salobj 7
+* ts_salobj 7.2
 * ts_config_mttcs
 * ts_simactuators 2
 * ts_utils 1
@@ -25,8 +23,6 @@ Requires:
 
 v0.10.0
 -------
-
-Change:
 
 * Rename command-line scripts to remove ".py" suffix.
 * Build with pyproject.toml.
@@ -42,8 +38,6 @@ Requires:
 v0.9.3
 ------
 
-Change:
-
 * Modernize the Jenkinsfile.
 
 Requires:
@@ -57,8 +51,6 @@ Requires:
 v0.9.2
 ------
 
-Changes:
-
 * Fix the case of the UPS file (was ts_MTDomeTrajectory.table).
 
 Requires:
@@ -71,8 +63,6 @@ Requires:
 
 v0.9.1
 ------
-
-Changes:
 
 * Update for ts_xml 11.1, which is required.
   `MockDome`: ignore two additional commands.
@@ -88,8 +78,6 @@ Requires:
 v0.9.0
 ------
 
-Changes:
-
 * Update for ts_salobj v7, which is required.
   This also requires ts_xml 11.
 
@@ -103,8 +91,6 @@ Requires:
 
 v0.8.0
 ------
-
-Changes:
 
 * `MockDome` update for ts_xml 10.1, which is required.
 * Rename package to ``ts_mtdometrajectory`` and Python namespace to ``lsst.ts.mtdometrajectory``.
@@ -124,8 +110,6 @@ Requires:
 v0.7.0
 ------
 
-Changes:
-
 * `MockDome`: add the ``exitFault`` command.
   This requires (and is required by) ts_xml 9.1.
 
@@ -138,8 +122,6 @@ Requires:
 
 v0.6.0
 ------
-
-Changes:
 
 * Support the ``setFollowingMode`` command.
   This requires ts_xml 9.
@@ -162,8 +144,6 @@ Requires:
 v0.5.0
 ------
 
-Changes:
-
 * Store the CSC configuration schema in code.
   This requires ts_salobj 6.3.
 * `MockDome`: set the ``version`` class attribute.
@@ -177,8 +157,6 @@ Requires:
 
 v0.4.1
 ------
-
-Changes:
 
 * `MTDomeTrajectory`: set the ``version`` class attribute.
   This sets the ``cscVersion`` field of the ``softwareVersions`` event.
@@ -194,8 +172,6 @@ Requires:
 v0.4.0
 ------
 
-Changes:
-
 * Updated for ts_xml 7.1 (which is required).
   Use ``MTMount`` instead of ``NewMTMount`` IDL.
 * Updated to use ``pre-commit`` to check commits.
@@ -210,8 +186,6 @@ Requires:
 v0.3.0
 ------
 
-Changes:
-
 * Removed deprecated flush argument when calling `lsst.ts.salobj.topics.ReadTopic.get`.
   This requires ts_salobj 6.
   
@@ -224,8 +198,6 @@ Requires:
 
 v0.2.1
 ------
-
-Changes:
 
 * Update Jenkinsfile.conda to use the shared library.
 * Pin the versions of ts_idl and ts_salobj in conda/meta.yaml.
@@ -240,8 +212,6 @@ Requires:
 v0.2.0
 ------
 
-Changes:
-
 * Implement renaming of Dome component to MTDome.
 
 Requires:
@@ -253,8 +223,6 @@ Requires:
 
 v0.1.4
 ------
-
-Changes:
 
 * Minor documentation fixes.
 
@@ -268,8 +236,6 @@ Requires:
 v0.1.3
 ------
 
-Changes:
-
 * Modernized the documentation.
 * Use `lsst.ts.salobj.topics.ReadTopic.get`\ ``(flush=False)`` everywhere, to avoid deprecation warnings from ts_salobj.
 
@@ -282,8 +248,6 @@ Requires:
 
 v0.1.2
 ------
-
-Changes:
 
 * Fix a race condition in `MTDomeTrajectory`.
 * Prevent the `MTDomeTrajectory` move_dome_* methods from hanging if an event is not received from the dome.
