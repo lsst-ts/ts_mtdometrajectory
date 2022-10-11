@@ -77,26 +77,12 @@ class MockDome(salobj.BaseCsc):
         self.telemetry_loop_task = utils.make_done_future()
         self.elevation_done_task = utils.make_done_future()
         self.azimuth_done_task = utils.make_done_future()
-
-        # Add do methods for unsupported commands
-        for name in (
-            "closeLouvers",
-            "closeShutter",
-            "crawlAz",
-            "crawlEl",
-            "exitFault",
-            "openShutter",
-            "park",
-            "resetDrivesAz",
-            "resetDrivesShutter",
-            "home",
-            "setLouvers",
-            "setOperationalMode",
-            "setTemperature",
-            "setZeroAz",
-        ):
-            setattr(self, f"do_{name}", self._unsupportedCommand)
-        super().__init__(name="MTDome", index=None, initial_state=initial_state)
+        super().__init__(
+            name="MTDome",
+            index=None,
+            initial_state=initial_state,
+            allow_missing_callbacks=True,
+        )
 
     async def start(self):
         await super().start()
@@ -291,6 +277,3 @@ class MockDome(salobj.BaseCsc):
         except Exception:
             self.log.exception("Telemetry loop failed")
             raise
-
-    def _unsupportedCommand(self, data):
-        raise salobj.ExpectedError("Not implemented")
