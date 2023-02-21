@@ -22,11 +22,8 @@
 import unittest
 
 import pytest
-
+from lsst.ts import mtdometrajectory, salobj, utils
 from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
-from lsst.ts import mtdometrajectory
-from lsst.ts import salobj
-from lsst.ts import utils
 
 STD_TIMEOUT = 60
 
@@ -73,7 +70,6 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
     async def test_move_az(self):
         """Test the moveAz command."""
         async with self.make_csc(initial_state=salobj.State.ENABLED):
-
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
                 state=MotionState.STOPPED,
@@ -163,7 +159,6 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
     async def test_move_el(self):
         """Test the moveEl and stopEl commands."""
         async with self.make_csc(initial_state=salobj.State.ENABLED):
-
             await self.assert_next_sample(
                 self.remote.evt_elMotion,
                 state=MotionState.STOPPED,
@@ -231,7 +226,6 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
     async def test_stop(self):
         """Test the stop command to stop azimuth and elevation."""
         async with self.make_csc(initial_state=salobj.State.ENABLED):
-
             await self.assert_next_sample(
                 self.remote.evt_azMotion,
                 state=MotionState.STOPPED,

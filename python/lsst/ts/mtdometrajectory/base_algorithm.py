@@ -23,7 +23,6 @@ __all__ = ["AlgorithmRegistry", "BaseAlgorithm"]
 
 import abc
 
-
 AlgorithmRegistry = dict()
 
 

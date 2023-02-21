@@ -6,6 +6,21 @@
 Version History
 ###############
 
+v0.11.1
+-------
+
+* pre-commit: update black to 23.1.0, isort to 5.12.0, mypy to 1.0.0, and pre-commit-hooks to v4.4.0.
+* ``Jenkinsfile``: do not run as root.
+
+Requires:
+
+* ts_salobj 7.2
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 12.1
+
+
 v0.11.0
 -------
 

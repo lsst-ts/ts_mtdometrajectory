@@ -29,11 +29,8 @@ import unittest
 
 import pytest
 import yaml
-
+from lsst.ts import mtdometrajectory, salobj, utils
 from lsst.ts.idl.enums.MTDome import MotionState
-from lsst.ts import mtdometrajectory
-from lsst.ts import salobj
-from lsst.ts import utils
 
 logging.basicConfig()
 logger = logging.getLogger()

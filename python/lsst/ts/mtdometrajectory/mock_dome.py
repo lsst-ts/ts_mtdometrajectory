@@ -23,10 +23,8 @@ __all__ = ["MockDome"]
 
 import asyncio
 
+from lsst.ts import salobj, simactuators, utils
 from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
-from lsst.ts import salobj
-from lsst.ts import simactuators
-from lsst.ts import utils
 
 
 class MockDome(salobj.BaseCsc):

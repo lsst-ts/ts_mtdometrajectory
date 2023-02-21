@@ -23,9 +23,7 @@ import unittest
 
 import jsonschema
 import pytest
-
-from lsst.ts import salobj
-from lsst.ts import mtdometrajectory
+from lsst.ts import mtdometrajectory, salobj
 
 
 class ValidationTestCase(unittest.TestCase):
