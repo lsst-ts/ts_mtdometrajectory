@@ -28,7 +28,7 @@ CONFIG_SCHEMA = yaml.safe_load(
 $schema: http://json-schema.org/draft-07/schema#
 $id: https://github.com/lsst-ts/ts_mtdometrajectory/blob/master/python/lsst/ts/mtdometrajectory/config_schema.py  # noqa
 # title must end with one or more spaces followed by the schema version, which must begin with "v"
-title: MTDomeTrajectory v2
+title: MTDomeTrajectory v3
 description: Schema for MTDomeTrajectory configuration files
 type: object
 properties:
@@ -54,9 +54,33 @@ properties:
       - max_delta_azimuth
       - max_delta_elevation
     additionalProperties: false
+  azimuth_vignette_min:
+    description: >-
+      Azimuth angle difference (deg) above which the telescope is partially vignetted
+      when the telescope is at elevation 0 (horizon). This is approximately 2.7°.
+    type: number
+  azimuth_vignette_max:
+    description: >-
+      Azimuth angle difference (deg) above which the telescope is fully vignetted
+      when the telescope is at elevation 0 (horizon). This is approximately 35°
+    type: number
+  elevation_vignette_min:
+    description: >-
+      Elevation angle difference (deg) above which the telescope is partially vignetted.
+      This is approximately 1.3°.
+    type: number
+  elevation_vignette_max:
+    description: >-
+      Elevation angle difference (deg) above which the telescope is fully vignetted
+      This is approximately 44°.
+    type: number
 required:
   - algorithm_name
   - simple
+  - azimuth_vignette_min
+  - azimuth_vignette_max
+  - elevation_vignette_min
+  - elevation_vignette_max
 additionalProperties: false
 """
 )
