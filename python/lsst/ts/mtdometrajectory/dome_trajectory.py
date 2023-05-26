@@ -37,10 +37,6 @@ from .elevation_azimuth import ElevationAzimuth
 # Timeout for commands that should be executed quickly
 STD_TIMEOUT = 5
 
-# Dome shutter percent open for no vignetting and full vignetting
-DOME_SHUTTER_OPEN_PERCENT = 99.9
-DOME_SHUTTER_CLOSED_PERCENT = 0.1
-
 # Time (sec) between polling for vignetting.
 VIGNETTING_MONITOR_INTERVAL = 0.1
 
@@ -163,19 +159,22 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         if (
             azimuth == TelescopeVignetted.UNKNOWN
             or elevation == TelescopeVignetted.UNKNOWN
-            or shutter == TelescopeVignetted.UNKNOWN
+            # TODO DM-39421 uncomment this once shutter info is available
+            # or shutter == TelescopeVignetted.UNKNOWN
         ):
             return TelescopeVignetted.UNKNOWN
         elif (
             azimuth == TelescopeVignetted.NO
             and elevation == TelescopeVignetted.NO
-            and shutter == TelescopeVignetted.NO
+            # TODO DM-39421 uncomment this once shutter info is available
+            # and shutter == TelescopeVignetted.NO
         ):
             return TelescopeVignetted.NO
         elif (
             azimuth == TelescopeVignetted.FULLY
             or elevation == TelescopeVignetted.FULLY
-            or shutter == TelescopeVignetted.FULLY
+            # TODO DM-39421 uncomment this once shutter info is available
+            # or shutter == TelescopeVignetted.FULLY
         ):
             return TelescopeVignetted.FULLY
         return TelescopeVignetted.PARTIALLY
@@ -212,9 +211,9 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         scaled_abs_azimuth_difference = abs_azimuth_difference * math.cos(
             math.radians(telescope_elevation)
         )
-        if scaled_abs_azimuth_difference < self.config.azimuth_vignette_min:
+        if scaled_abs_azimuth_difference < self.config.azimuth_vignette_partial:
             return TelescopeVignetted.NO
-        elif scaled_abs_azimuth_difference < self.config.azimuth_vignette_max:
+        elif scaled_abs_azimuth_difference < self.config.azimuth_vignette_full:
             return TelescopeVignetted.PARTIALLY
         return TelescopeVignetted.FULLY
 
@@ -239,19 +238,19 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         abs_elevation_difference = abs(
             utils.angle_diff(dome_elevation, telescope_elevation).deg
         )
-        if abs_elevation_difference < self.config.azimuth_vignette_min:
+        if abs_elevation_difference < self.config.elevation_vignette_partial:
             return TelescopeVignetted.NO
-        elif abs_elevation_difference < self.config.azimuth_vignette_max:
+        elif abs_elevation_difference < self.config.elevation_vignette_full:
             return TelescopeVignetted.PARTIALLY
         return TelescopeVignetted.FULLY
 
-    def compute_vignetted_by_shutter(self, dome_shutters_percent_open):
+    def compute_vignetted_by_shutter(self, shutters_percent_open):
         """Compute the ``shutter`` field of the telescopeVignetted event.
 
         Parameters
         ----------
-        dome_shutters_percent_open : [`float`, `float`] | None
-            Dome current open percentage (%) of both shutters; None if unknown.
+        shutters_percent_open : [`float`, `float`] | None
+            Current open percentage (%) of both dome shutters; None if unknown.
 
         Returns
         -------
@@ -259,16 +258,16 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             Telescope vignetted by dome shutter.
         """
 
-        if dome_shutters_percent_open is None:
+        if shutters_percent_open is None:
             return TelescopeVignetted.UNKNOWN
         if (
-            dome_shutters_percent_open[0] >= DOME_SHUTTER_OPEN_PERCENT
-            and dome_shutters_percent_open[1] >= DOME_SHUTTER_OPEN_PERCENT
+            shutters_percent_open[0] >= self.config.shutter_open_percentage_partial
+            and shutters_percent_open[1] >= self.config.shutter_open_percentage_partial
         ):
             return TelescopeVignetted.NO
         elif (
-            dome_shutters_percent_open[0] <= DOME_SHUTTER_CLOSED_PERCENT
-            and dome_shutters_percent_open[1] <= DOME_SHUTTER_CLOSED_PERCENT
+            shutters_percent_open[0] <= self.config.shutter_open_percentage_full
+            and shutters_percent_open[1] <= self.config.shutter_open_percentage_full
         ):
             return TelescopeVignetted.FULLY
         return TelescopeVignetted.PARTIALLY
@@ -339,7 +338,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         elevation_data = self.dome_remote.tel_lightWindScreen.get()
         return None if elevation_data is None else elevation_data.positionActual
 
-    def get_dome_shutters_percent_open(self):
+    def get_shutters_percent_open(self):
         """Get the current open percentage of both shutters, or None
         if unavailable.
         """
@@ -347,7 +346,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         return None if shutter_data is None else shutter_data.positionActual
 
     def get_dome_summary_state(self):
-        """Get ATDome summary state, or None if unavailable."""
+        """Get MTDome summary state, or None if unavailable."""
         dome_state = self.dome_remote.evt_summaryState.get()
         return None if dome_state is None else dome_state.summaryState
 
@@ -362,7 +361,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         return None if elevation_data is None else elevation_data.actualPosition
 
     def get_telescope_summary_state(self):
-        """Get ATMCS summary state, or None if unavailable."""
+        """Get MTMount summary state, or None if unavailable."""
         telescope_state = self.mtmount_remote.evt_summaryState.get()
         return None if telescope_state is None else telescope_state.summaryState
 
@@ -386,7 +385,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             )
 
     async def report_vignetted_loop(self):
-        """Poll ATDome & MTMount topics to report telescopeVignetted event."""
+        """Poll MTDome & MTMount topics to report telescopeVignetted event."""
         self.log.info("report_vignetted_loop begins")
         ok_states = frozenset((salobj.State.DISABLED, salobj.State.ENABLED))
         try:
@@ -402,7 +401,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                     telescope_elevation = self.get_telescope_elevation()
                     dome_azimuth = self.get_dome_azimuth()
                     dome_elevation = self.get_dome_elevation()
-                    dome_shutters_percent_open = self.get_dome_shutters_percent_open()
+                    shutters_percent_open = self.get_shutters_percent_open()
                     azimuth = self.compute_vignetted_by_azimuth(
                         dome_azimuth=dome_azimuth,
                         telescope_azimuth=telescope_azimuth,
@@ -413,7 +412,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                         telescope_elevation=telescope_elevation,
                     )
                     shutter = self.compute_vignetted_by_shutter(
-                        dome_shutters_percent_open=dome_shutters_percent_open
+                        shutters_percent_open=shutters_percent_open
                     )
 
                 vignetted = self.compute_vignetted_by_any(

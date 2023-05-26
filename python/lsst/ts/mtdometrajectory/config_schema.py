@@ -54,33 +54,47 @@ properties:
       - max_delta_azimuth
       - max_delta_elevation
     additionalProperties: false
-  azimuth_vignette_min:
+  azimuth_vignette_partial:
     description: >-
       Azimuth angle difference (deg) above which the telescope is partially vignetted
       when the telescope is at elevation 0 (horizon). This is approximately 2.7°.
     type: number
-  azimuth_vignette_max:
+  azimuth_vignette_full:
     description: >-
       Azimuth angle difference (deg) above which the telescope is fully vignetted
       when the telescope is at elevation 0 (horizon). This is approximately 35°
     type: number
-  elevation_vignette_min:
+  elevation_vignette_partial:
     description: >-
       Elevation angle difference (deg) above which the telescope is partially vignetted.
       This is approximately 1.3°.
     type: number
-  elevation_vignette_max:
+  elevation_vignette_full:
     description: >-
       Elevation angle difference (deg) above which the telescope is fully vignetted
       This is approximately 44°.
     type: number
+  shutter_vignette_partial:
+    description: >-
+      Shutter open percentage (%) above which the telescope is partially vignetted.
+      Ignored until dome open percentage is reported and DM-39421 is implemented.
+    type: number
+  shutter_vignette_full:
+    description: >-
+      Shutter open percentage (%) above which the telescope is fully vignetted.
+      This probably needs to be a bit larger than 0, to take into account noise in the reported value
+      and/or essentially no light getting through in the last bit of travel.
+      Ignored until dome open percentage is reported and DM-39421 is implemented.
+    type: number
 required:
   - algorithm_name
   - simple
-  - azimuth_vignette_min
-  - azimuth_vignette_max
-  - elevation_vignette_min
-  - elevation_vignette_max
+  - azimuth_vignette_partial
+  - azimuth_vignette_full
+  - elevation_vignette_partial
+  - elevation_vignette_full
+  - shutter_vignette_partial
+  - shutter_vignette_full
 additionalProperties: false
 """
 )

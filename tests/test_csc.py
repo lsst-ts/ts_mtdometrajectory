@@ -31,6 +31,7 @@ import pytest
 import yaml
 from lsst.ts import mtdometrajectory, salobj, utils
 from lsst.ts.idl.enums.MTDome import MotionState
+from lsst.ts.idl.enums.MTDomeTrajectory import TelescopeVignetted
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -69,7 +70,20 @@ class MTDomeTrajectoryTestCase(
         ) as self.dome_remote, salobj.Controller(
             "MTMount"
         ) as self.mtmount_controller:
+            # TODO DM-39421 uncomment this once shutter info is available
+            # await self.write_dome_shutter_open_percent([100, 100])
+            await self.mtmount_controller.evt_summaryState.set_write(
+                summaryState=salobj.State.ENABLED
+            )
             yield
+
+    async def write_dome_shutter_open_percent(self, open_percent):
+        """Write mock dome shutter open percent; a pair of floats.
+
+        Note that the mock dome does not handle the shutter at all.
+        """
+        assert len(open_percent) == 2
+        await self.dome_csc.tel_apertureShutter.set_write(positionActual=open_percent)
 
     def basic_make_csc(
         self,
@@ -133,7 +147,7 @@ class MTDomeTrajectoryTestCase(
                 (
                     initial_elevation,
                     initial_azimuth
-                    + self.scaled_max_delta_azimuth(initial_elevation)
+                    + self.scaled_full_delta_azimuth(initial_elevation)
                     + 0.001,
                     False,
                     True,
@@ -176,6 +190,196 @@ class MTDomeTrajectoryTestCase(
                 move_expected=False,
             )
 
+    async def test_telescope_vignetted(self):
+        async with self.make_csc(
+            initial_state=salobj.State.ENABLED, config_dir=TEST_CONFIG_DIR
+        ):
+            await self.assert_next_sample(
+                self.dome_remote.evt_azMotion, state=MotionState.STOPPED
+            )
+            await self.assert_next_sample(
+                self.dome_remote.evt_elMotion, state=MotionState.STOPPED
+            )
+            angle_margin = 0.01
+            await self.assert_next_sample(self.remote.evt_followingMode, enabled=False)
+            azimuth_vignette_partial = self.csc.config.azimuth_vignette_partial
+            azimuth_vignette_full = self.csc.config.azimuth_vignette_full
+            elevation_vignette_partial = self.csc.config.elevation_vignette_partial
+            elevation_vignette_full = self.csc.config.elevation_vignette_full
+            print(f"{elevation_vignette_full=}")
+
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.UNKNOWN,
+                elevation=TelescopeVignetted.UNKNOWN,
+                shutter=TelescopeVignetted.UNKNOWN,
+                vignetted=TelescopeVignetted.UNKNOWN,
+            )
+
+            # TODO DM-39421 uncomment this once shutter info is available
+            # # MTDomeTrajectory notices that the shutter is open.
+            # await self.assert_next_sample(
+            #     topic=self.remote.evt_telescopeVignetted,
+            #     azimuth=TelescopeVignetted.UNKNOWN,
+            #     elevation=TelescopeVignetted.UNKNOWN,
+            #     shutter=TelescopeVignetted.NO,
+            #     vignetted=TelescopeVignetted.UNKNOWN,
+            # )
+
+            await self.publish_telescope_actual_elevation(elevation=0)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.UNKNOWN,
+                elevation=TelescopeVignetted.NO,
+                vignetted=TelescopeVignetted.UNKNOWN,
+            )
+
+            await self.publish_telescope_actual_azimuth(azimuth=0)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.NO,
+                elevation=TelescopeVignetted.NO,
+                vignetted=TelescopeVignetted.NO,
+            )
+
+            # Move the dome far enough negative to vignette partially
+            dome_az = 0 - azimuth_vignette_partial - angle_margin
+            await self.dome_remote.cmd_moveAz.set_start(position=dome_az)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.PARTIALLY,
+                elevation=TelescopeVignetted.NO,
+                vignetted=TelescopeVignetted.PARTIALLY,
+            )
+            await self.assert_next_sample(
+                self.dome_remote.evt_azMotion, state=MotionState.MOVING
+            )
+            await self.assert_next_sample(
+                self.dome_remote.evt_azMotion, state=MotionState.STOPPED
+            )
+
+            # Change telescope azimuth far enough away on the other side
+            # of zero to fully vignette
+            telescope_az = dome_az + azimuth_vignette_full + angle_margin
+            await self.publish_telescope_actual_azimuth(azimuth=telescope_az)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.FULLY,
+            )
+
+            # Change telescope elevation enough to vignette azimuth partially.
+            # Don't be fancy; just use a large elevation.
+            nominal_elevation = 45
+            await self.publish_telescope_actual_elevation(elevation=nominal_elevation)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.PARTIALLY,
+                elevation=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.FULLY,
+            )
+
+            # Center dome in azimuth, preparatory to testing elevation.
+            await self.publish_telescope_actual_azimuth(azimuth=dome_az)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.NO,
+                elevation=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.FULLY,
+            )
+
+            # Move dome elevation to the same large elevation.
+            # Dome motion is slow (unlike telescope motion)
+            # so elevation vignetting will first be partial, then none,
+            await self.dome_remote.cmd_moveEl.set_start(position=nominal_elevation)
+            print("*** started dome elevation motion")
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.NO,
+                elevation=TelescopeVignetted.PARTIALLY,
+                vignetted=TelescopeVignetted.PARTIALLY,
+            )
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.NO,
+                elevation=TelescopeVignetted.NO,
+                vignetted=TelescopeVignetted.NO,
+            )
+
+            # Wait for the dome elevation move to finish.
+            await self.assert_next_sample(
+                self.dome_remote.evt_elMotion, state=MotionState.MOVING
+            )
+            await self.assert_next_sample(
+                self.dome_remote.evt_elMotion, state=MotionState.STOPPED
+            )
+
+            # Set telescope elevation high enough to vignette partially.
+            await self.publish_telescope_actual_elevation(
+                elevation=nominal_elevation + elevation_vignette_partial + angle_margin
+            )
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.NO,
+                elevation=TelescopeVignetted.PARTIALLY,
+                vignetted=TelescopeVignetted.PARTIALLY,
+            )
+
+            # Increase telescope elevation high enough to vignette fully.
+            await self.publish_telescope_actual_elevation(
+                elevation=nominal_elevation + elevation_vignette_full + angle_margin
+            )
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.NO,
+                elevation=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.FULLY,
+            )
+
+            # Set telescope elevation low enough to vignette partially.
+            await self.publish_telescope_actual_elevation(
+                elevation=nominal_elevation - elevation_vignette_partial - angle_margin
+            )
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.NO,
+                elevation=TelescopeVignetted.PARTIALLY,
+                vignetted=TelescopeVignetted.PARTIALLY,
+            )
+
+            # Set telescope elevation low enough to vignette fully.
+            await self.publish_telescope_actual_elevation(
+                elevation=nominal_elevation - elevation_vignette_full - angle_margin
+            )
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.NO,
+                elevation=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.FULLY,
+            )
+
+            return
+
+    async def publish_telescope_actual_azimuth(self, azimuth):
+        """Publish MTMount azimuth.actualPosition.
+
+        Parameters
+        ----------
+        azimuth : `float`
+            Telescope actual azimuth (deg)
+        """
+        await self.mtmount_controller.tel_azimuth.set_write(actualPosition=azimuth)
+
+    async def publish_telescope_actual_elevation(self, elevation):
+        """Publish MTMount elevation.actualPosition.
+
+        Parameters
+        ----------
+        elevation : `float`
+            Telescope actual elevation (deg)
+        """
+        await self.mtmount_controller.tel_elevation.set_write(actualPosition=elevation)
+
     async def test_default_config_dir(self):
         async with self.make_csc(initial_state=salobj.State.STANDBY):
             desired_config_pkg_name = "ts_config_mttcs"
@@ -200,7 +404,7 @@ class MTDomeTrajectoryTestCase(
                 "no_such_file.yaml",
                 "invalid_no_such_algorithm.yaml",
                 "invalid_malformed.yaml",
-                "invalid_bad_max_daz.yaml",
+                "invalid_bad_full_daz.yaml",
             ):
                 with self.subTest(bad_config_name=bad_config_name):
                     self.remote.cmd_start.set(configurationOverride=bad_config_name)
@@ -286,7 +490,7 @@ class MTDomeTrajectoryTestCase(
             self.csc.telescope_target.azimuth.position, expected_azimuth
         )
 
-    def scaled_max_delta_azimuth(self, elevation):
+    def scaled_full_delta_azimuth(self, elevation):
         """max_delta_azimuth scaled by cos(elevation).
 
         Thus the minimum azimuth difference that will trigger a dome move
@@ -425,13 +629,13 @@ class MTDomeTrajectoryTestCase(
             (
                 min_elevation,
                 dome_target_azimuth.position
-                - self.scaled_max_delta_azimuth(min_elevation)
+                - self.scaled_full_delta_azimuth(min_elevation)
                 + 0.001,
             ),
             (
                 max_elevation,
                 dome_target_azimuth.position
-                + self.scaled_max_delta_azimuth(max_elevation)
+                + self.scaled_full_delta_azimuth(max_elevation)
                 - 0.001,
             ),
             (dome_target_elevation.position, dome_target_azimuth.position),
