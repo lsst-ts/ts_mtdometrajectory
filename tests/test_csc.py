@@ -358,8 +358,6 @@ class MTDomeTrajectoryTestCase(
                 vignetted=TelescopeVignetted.FULLY,
             )
 
-            return
-
     async def publish_telescope_actual_azimuth(self, azimuth):
         """Publish MTMount azimuth.actualPosition.
 
