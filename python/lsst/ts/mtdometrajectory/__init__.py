@@ -24,9 +24,9 @@ try:
 except ImportError:
     __version__ = "?"
 
-from .config_schema import *
-from .elevation_azimuth import *
 from .base_algorithm import *
-from .simple_algorithm import *
+from .config_schema import *
 from .dome_trajectory import *
+from .elevation_azimuth import *
 from .mock_dome import *
+from .simple_algorithm import *

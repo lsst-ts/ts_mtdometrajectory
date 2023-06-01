@@ -28,7 +28,7 @@ CONFIG_SCHEMA = yaml.safe_load(
 $schema: http://json-schema.org/draft-07/schema#
 $id: https://github.com/lsst-ts/ts_mtdometrajectory/blob/master/python/lsst/ts/mtdometrajectory/config_schema.py  # noqa
 # title must end with one or more spaces followed by the schema version, which must begin with "v"
-title: MTDomeTrajectory v2
+title: MTDomeTrajectory v3
 description: Schema for MTDomeTrajectory configuration files
 type: object
 properties:
@@ -54,9 +54,47 @@ properties:
       - max_delta_azimuth
       - max_delta_elevation
     additionalProperties: false
+  azimuth_vignette_partial:
+    description: >-
+      Azimuth angle difference (deg) above which the telescope is partially vignetted
+      when the telescope is at elevation 0 (horizon). This is approximately 2.7°.
+    type: number
+  azimuth_vignette_full:
+    description: >-
+      Azimuth angle difference (deg) above which the telescope is fully vignetted
+      when the telescope is at elevation 0 (horizon). This is approximately 35°
+    type: number
+  elevation_vignette_partial:
+    description: >-
+      Elevation angle difference (deg) above which the telescope is partially vignetted.
+      This is approximately 1.3°.
+    type: number
+  elevation_vignette_full:
+    description: >-
+      Elevation angle difference (deg) above which the telescope is fully vignetted
+      This is approximately 44°.
+    type: number
+  shutter_vignette_partial:
+    description: >-
+      Shutter open percentage (%) above which the telescope is partially vignetted.
+      Ignored until dome open percentage is reported and DM-39421 is implemented.
+    type: number
+  shutter_vignette_full:
+    description: >-
+      Shutter open percentage (%) above which the telescope is fully vignetted.
+      This probably needs to be a bit larger than 0, to take into account noise in the reported value
+      and/or essentially no light getting through in the last bit of travel.
+      Ignored until dome open percentage is reported and DM-39421 is implemented.
+    type: number
 required:
   - algorithm_name
   - simple
+  - azimuth_vignette_partial
+  - azimuth_vignette_full
+  - elevation_vignette_partial
+  - elevation_vignette_full
+  - shutter_vignette_partial
+  - shutter_vignette_full
 additionalProperties: false
 """
 )
