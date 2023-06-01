@@ -19,10 +19,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import pathlib
 import unittest
 
 import jsonschema
 import pytest
+import yaml
 from lsst.ts import mtdometrajectory, salobj
 
 
@@ -32,21 +34,30 @@ class ValidationTestCase(unittest.TestCase):
     def setUp(self):
         self.schema = mtdometrajectory.CONFIG_SCHEMA
         self.validator = salobj.StandardValidator(schema=self.schema)
+        self.config_dir = pathlib.Path(__file__).parent / "data" / "config"
 
     def test_basics(self):
-        data = dict(
-            algorithm_name="simple",
-            simple=dict(max_delta_azimuth=3.5, max_delta_elevation=2.2),
-        )
+        with open(self.config_dir / "_init.yaml", "r") as f:
+            data_yaml = f.read()
+        data = yaml.safe_load(data_yaml)
         self.validator.validate(data)
 
-    def test_bad_algorithm_name(self):
-        data = dict(algorithm_name="invalid_name")
-        with pytest.raises(jsonschema.exceptions.ValidationError):
-            self.validator.validate(data)
+    def test_invalid_files(self):
+        for path_to_invalid_data in self.config_dir.glob("invalid_*.yaml"):
+            with self.subTest(path_to_invalid_data=path_to_invalid_data):
+                with open(path_to_invalid_data, "r") as f:
+                    invalid_data_yaml = f.read()
+                invalid_data = yaml.safe_load(invalid_data_yaml)
+                with pytest.raises(jsonschema.exceptions.ValidationError):
+                    self.validator.validate(invalid_data)
 
-    def test_bad_algorithm_config(self):
-        """The current schema only checks for a dict."""
-        data = dict(algorithm_name="simple", simple=45)
-        with pytest.raises(jsonschema.exceptions.ValidationError):
-            self.validator.validate(data)
+    def test_missing_field(self):
+        with open(self.config_dir / "_init.yaml", "r") as f:
+            data_yaml = f.read()
+        good_data = yaml.safe_load(data_yaml)
+        for missing_field in good_data:
+            with self.subTest(missing_field=missing_field):
+                bad_data = good_data.copy()
+                del bad_data[missing_field]
+                with pytest.raises(jsonschema.exceptions.ValidationError):
+                    self.validator.validate(bad_data)
