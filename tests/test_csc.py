@@ -71,6 +71,7 @@ class MTDomeTrajectoryTestCase(
             "MTMount"
         ) as self.mtmount_controller:
             # TODO DM-39421 uncomment this once shutter info is available
+            # from the real MTDome.
             # await self.write_dome_shutter_open_percent([100, 100])
             await self.mtmount_controller.evt_summaryState.set_write(
                 summaryState=salobj.State.ENABLED
@@ -217,6 +218,7 @@ class MTDomeTrajectoryTestCase(
             )
 
             # TODO DM-39421 uncomment this once shutter info is available
+            # from the real MTDome.
             # # MTDomeTrajectory notices that the shutter is open.
             # await self.assert_next_sample(
             #     topic=self.remote.evt_telescopeVignetted,
