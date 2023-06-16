@@ -76,15 +76,13 @@ properties:
     type: number
   shutter_vignette_partial:
     description: >-
-      Shutter open percentage (%) above which the telescope is partially vignetted.
-      Ignored until dome open percentage is reported and DM-39421 is implemented.
+      Shutter open percentage (%) below which the telescope is partially vignetted.
     type: number
   shutter_vignette_full:
     description: >-
-      Shutter open percentage (%) above which the telescope is fully vignetted.
+      Shutter open percentage (%) below which the telescope is fully vignetted.
       This probably needs to be a bit larger than 0, to take into account noise in the reported value
       and/or essentially no light getting through in the last bit of travel.
-      Ignored until dome open percentage is reported and DM-39421 is implemented.
     type: number
 required:
   - algorithm_name
