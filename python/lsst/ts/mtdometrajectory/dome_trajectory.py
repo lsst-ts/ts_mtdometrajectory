@@ -160,6 +160,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             azimuth == TelescopeVignetted.UNKNOWN
             or elevation == TelescopeVignetted.UNKNOWN
             # TODO DM-39421 uncomment this once shutter info is available
+            # from the real MTDome.
             # or shutter == TelescopeVignetted.UNKNOWN
         ):
             return TelescopeVignetted.UNKNOWN
@@ -167,6 +168,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             azimuth == TelescopeVignetted.NO
             and elevation == TelescopeVignetted.NO
             # TODO DM-39421 uncomment this once shutter info is available
+            # from the real MTDome.
             # and shutter == TelescopeVignetted.NO
         ):
             return TelescopeVignetted.NO
@@ -174,6 +176,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             azimuth == TelescopeVignetted.FULLY
             or elevation == TelescopeVignetted.FULLY
             # TODO DM-39421 uncomment this once shutter info is available
+            # from the real MTDome.
             # or shutter == TelescopeVignetted.FULLY
         ):
             return TelescopeVignetted.FULLY
@@ -261,13 +264,13 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         if shutters_percent_open is None:
             return TelescopeVignetted.UNKNOWN
         if (
-            shutters_percent_open[0] >= self.config.shutter_open_percentage_partial
-            and shutters_percent_open[1] >= self.config.shutter_open_percentage_partial
+            shutters_percent_open[0] >= self.config.shutter_vignette_partial
+            and shutters_percent_open[1] >= self.config.shutter_vignette_partial
         ):
             return TelescopeVignetted.NO
         elif (
-            shutters_percent_open[0] <= self.config.shutter_open_percentage_full
-            and shutters_percent_open[1] <= self.config.shutter_open_percentage_full
+            shutters_percent_open[0] <= self.config.shutter_vignette_full
+            and shutters_percent_open[1] <= self.config.shutter_vignette_full
         ):
             return TelescopeVignetted.FULLY
         return TelescopeVignetted.PARTIALLY

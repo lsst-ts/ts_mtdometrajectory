@@ -71,6 +71,7 @@ class MTDomeTrajectoryTestCase(
             "MTMount"
         ) as self.mtmount_controller:
             # TODO DM-39421 uncomment this once shutter info is available
+            # from the real MTDome.
             # await self.write_dome_shutter_open_percent([100, 100])
             await self.mtmount_controller.evt_summaryState.set_write(
                 summaryState=salobj.State.ENABLED
@@ -191,6 +192,9 @@ class MTDomeTrajectoryTestCase(
             )
 
     async def test_telescope_vignetted(self):
+        # TODO DM-39421 expand these tests once the "vignetted" field
+        # is affected by the "shutter" field.
+
         async with self.make_csc(
             initial_state=salobj.State.ENABLED, config_dir=TEST_CONFIG_DIR
         ):
@@ -201,11 +205,13 @@ class MTDomeTrajectoryTestCase(
                 self.dome_remote.evt_elMotion, state=MotionState.STOPPED
             )
             angle_margin = 0.01
+            shutter_margin = 0.01
+            config = self.csc.config
             await self.assert_next_sample(self.remote.evt_followingMode, enabled=False)
-            azimuth_vignette_partial = self.csc.config.azimuth_vignette_partial
-            azimuth_vignette_full = self.csc.config.azimuth_vignette_full
-            elevation_vignette_partial = self.csc.config.elevation_vignette_partial
-            elevation_vignette_full = self.csc.config.elevation_vignette_full
+            azimuth_vignette_partial = config.azimuth_vignette_partial
+            azimuth_vignette_full = config.azimuth_vignette_full
+            elevation_vignette_partial = config.elevation_vignette_partial
+            elevation_vignette_full = config.elevation_vignette_full
             print(f"{elevation_vignette_full=}")
 
             await self.assert_next_sample(
@@ -216,21 +222,29 @@ class MTDomeTrajectoryTestCase(
                 vignetted=TelescopeVignetted.UNKNOWN,
             )
 
-            # TODO DM-39421 uncomment this once shutter info is available
-            # # MTDomeTrajectory notices that the shutter is open.
-            # await self.assert_next_sample(
-            #     topic=self.remote.evt_telescopeVignetted,
-            #     azimuth=TelescopeVignetted.UNKNOWN,
-            #     elevation=TelescopeVignetted.UNKNOWN,
-            #     shutter=TelescopeVignetted.NO,
-            #     vignetted=TelescopeVignetted.UNKNOWN,
-            # )
+            await self.check_shutter_vignette(
+                shutter_position=config.shutter_vignette_partial + shutter_margin,
+                expected_vignetting=TelescopeVignetted.NO,
+            )
+            await self.check_shutter_vignette(
+                shutter_position=config.shutter_vignette_partial - shutter_margin,
+                expected_vignetting=TelescopeVignetted.PARTIALLY,
+            )
+            await self.check_shutter_vignette(
+                shutter_position=config.shutter_vignette_full + shutter_margin,
+                expected_vignetting=TelescopeVignetted.PARTIALLY,
+            )
+            await self.check_shutter_vignette(
+                shutter_position=config.shutter_vignette_full - shutter_margin,
+                expected_vignetting=TelescopeVignetted.FULLY,
+            )
 
             await self.publish_telescope_actual_elevation(elevation=0)
             await self.assert_next_sample(
                 topic=self.remote.evt_telescopeVignetted,
                 azimuth=TelescopeVignetted.UNKNOWN,
                 elevation=TelescopeVignetted.NO,
+                shutter=TelescopeVignetted.FULLY,
                 vignetted=TelescopeVignetted.UNKNOWN,
             )
 
@@ -357,6 +371,60 @@ class MTDomeTrajectoryTestCase(
                 elevation=TelescopeVignetted.FULLY,
                 vignetted=TelescopeVignetted.FULLY,
             )
+
+    async def check_shutter_vignette(self, shutter_position, expected_vignetting):
+        """Set various combinations of the shutter to verify vignetting."""
+
+        def get_different_position_vignetting(vignetting):
+            """Given current vignetting, return a shutter position
+            and resulting vignetting that is different.
+
+            This is used to make sure that the next commanded shutter
+            position will trigger a new telescopeVignetted event
+            with a different value of the "shutter" field.
+            """
+            if vignetting == TelescopeVignetted.FULLY:
+                return 100, TelescopeVignetted.NO
+            return 0, TelescopeVignetted.FULLY
+
+        # The other shutter must be open if we expect
+        # the shutter to be not vignetted and must be closed
+        # if we expect full vignetting. It doesn't matter as much
+        # if we expect partial vignetting.
+        other_shutter_position = (
+            0 if expected_vignetting == TelescopeVignetted.FULLY else 100
+        )
+        for shutter_positions in (
+            [shutter_position, other_shutter_position],
+            [other_shutter_position, shutter_position],
+            [shutter_position, shutter_position],
+        ):
+            with self.subTest(shutter_position=shutter_positions):
+                current_shutter_vignetted = TelescopeVignetted(
+                    self.remote.evt_telescopeVignetted.get().shutter
+                )
+                if current_shutter_vignetted == expected_vignetting:
+                    # Move the shutter somewhere else to change vignetting.
+                    (
+                        different_shutter_position,
+                        different_vignetted,
+                    ) = get_different_position_vignetting(current_shutter_vignetted)
+
+                    await self.dome_csc.tel_apertureShutter.set_write(
+                        positionActual=[different_shutter_position] * 2
+                    )
+                    await self.assert_next_sample(
+                        topic=self.remote.evt_telescopeVignetted,
+                        shutter=different_vignetted,
+                    )
+
+                await self.dome_csc.tel_apertureShutter.set_write(
+                    positionActual=shutter_positions
+                )
+                await self.assert_next_sample(
+                    topic=self.remote.evt_telescopeVignetted,
+                    shutter=expected_vignetting,
+                )
 
     async def publish_telescope_actual_azimuth(self, azimuth):
         """Publish MTMount azimuth.actualPosition.
