@@ -6,12 +6,28 @@
 Version History
 ###############
 
+v0.12.1
+-------
+
+* MTDomeTrajectory:
+
+    * Fix misspelled config field names associated with the shutter.
+    * Expand tests to test vignetting by shutter.
+
+Requires:
+
+* ts_salobj 7.2
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 16
+
 v0.12.0
 -------
 
 * Report vignetting by dome.
   This requires ts_xml 16.
-  Note: vignetting by the shutter is always reported as UNKNOWN, because the shutter position is not yet reported by MTDome.
+  Warning: telescopeVignetted.vignetted ignores telescopeVignetted.shutter for now: until the real MTDome publishes shutter position (DM-39421).
 * Use ts_pre_commit_config.
 * ``Jenkinsfile``: use the shared library.
 * Remove scons support.
