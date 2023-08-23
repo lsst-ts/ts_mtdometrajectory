@@ -2,3 +2,4 @@ algorithm_name: "simple"
 simple:
   max_delta_azimuth: 7.1
   max_delta_elevation: 5.5
+enable_el_motion: true
