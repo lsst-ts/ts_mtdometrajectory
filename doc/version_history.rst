@@ -6,6 +6,25 @@
 Version History
 ###############
 
+v0.13.0
+-------
+
+* First version that can be used at the summit.
+* Make this CSC work together with the MTDome CSC:
+
+    * Make sure that no move commands for azimuth or elevation are sent if the commanded position is NaN.
+    * Make sure that the azimuth position always is in the range [0, 360)
+    * Add a configuration option to disable elevation motion.
+      This is needed as long as the light/wind screen is not supported by the MTDome control software.
+
+Requires:
+
+* ts_salobj 7.2
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 16
+
 v0.12.1
 -------
 
@@ -237,7 +256,7 @@ v0.3.0
 
 * Removed deprecated flush argument when calling `lsst.ts.salobj.topics.ReadTopic.get`.
   This requires ts_salobj 6.
-  
+
 Requires:
 
 * ts_salobj 6

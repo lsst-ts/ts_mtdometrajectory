@@ -90,6 +90,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         # an ElevationAzimuth; None before the next target is seen;
         self.next_telescope_target = None
 
+        self.enable_el_motion = False
+
         # Tasks that start dome azimuth and elevation motion
         # and wait for the motionState and target events
         # that indicate the motion has started.
@@ -126,6 +128,9 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
 
         self.mtmount_remote.evt_target.callback = self.update_mtmount_target
         self.report_vignetted_task = utils.make_done_future()
+
+        self.algorithm = None
+        self.config = None
 
     @staticmethod
     def get_config_pkg():
@@ -285,10 +290,11 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         """
         algorithm_name = config.algorithm_name
         if algorithm_name not in AlgorithmRegistry:
-            raise salobj.ExpectedError(f"Unknown algorithm {algorithm_name}")
+            raise salobj.ExpectedError(f"Unknown algorithm {algorithm_name}.")
         algorithm_config = getattr(config, config.algorithm_name)
         self.algorithm = AlgorithmRegistry[config.algorithm_name](**algorithm_config)
         self.config = config
+        self.enable_el_motion = config.enable_el_motion
         await self.evt_algorithm.set_write(
             algorithmName=config.algorithm_name,
             algorithmConfig=yaml.dump(algorithm_config),
@@ -389,7 +395,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
 
     async def report_vignetted_loop(self):
         """Poll MTDome & MTMount topics to report telescopeVignetted event."""
-        self.log.info("report_vignetted_loop begins")
+        self.log.info("report_vignetted_loop begins.")
         ok_states = frozenset((salobj.State.DISABLED, salobj.State.ENABLED))
         try:
             while True:
@@ -429,9 +435,9 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                 )
                 await asyncio.sleep(VIGNETTING_MONITOR_INTERVAL)
         except asyncio.CancelledError:
-            self.log.info("report_vignetted_loop ends")
-        except Exception as e:
-            self.log.exception(f"report_vignetted_loop failed: {e!r}")
+            self.log.info("report_vignetted_loop ends.")
+        except Exception:
+            self.log.exception("report_vignetted_loop failed.")
         await self.evt_telescopeVignetted.set_write(
             vignetted=TelescopeVignetted.UNKNOWN,
             azimuth=TelescopeVignetted.UNKNOWN,
@@ -450,8 +456,9 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                 velocity=target.elevationVelocity,
                 tai=target.taiTime,
             ),
+            # Make sure that the target angle is in the range [0, 360).
             azimuth=simactuators.path.PathSegment(
-                position=target.azimuth,
+                position=utils.angle_wrap_nonnegative(target.azimuth).deg,
                 velocity=target.azimuthVelocity,
                 tai=target.taiTime,
             ),
@@ -478,6 +485,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         if (
             self.move_dome_elevation_task.done()
             and self.dome_remote.evt_elMotion.has_data
+            and self.enable_el_motion
         ):
             dome_target_elevation = self.get_dome_target_elevation()
             desired_dome_elevation = self.algorithm.desired_dome_elevation(
@@ -485,10 +493,16 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                 telescope_target=self.telescope_target,
                 next_telescope_target=self.next_telescope_target,
             )
-            if desired_dome_elevation is not None:
+            if desired_dome_elevation is not None and math.isfinite(
+                desired_dome_elevation.position
+            ):
                 moved_elevation = True
                 self.move_dome_elevation_task = asyncio.create_task(
                     self.move_dome_elevation(desired_dome_elevation)
+                )
+            else:
+                self.log.warning(
+                    f"{desired_dome_elevation=} too small or invalid; not moving the dome elevation."
                 )
 
         if (
@@ -501,10 +515,18 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                 telescope_target=self.telescope_target,
                 next_telescope_target=self.next_telescope_target,
             )
-            if desired_dome_azimuth is not None:
+            if (
+                desired_dome_azimuth is not None
+                and math.isfinite(desired_dome_azimuth.position)
+                and math.isfinite(desired_dome_azimuth.velocity)
+            ):
                 moved_azimuth = True
                 self.move_dome_azimuth_task = asyncio.create_task(
                     self.move_dome_azimuth(desired_dome_azimuth)
+                )
+            else:
+                self.log.warning(
+                    f"{desired_dome_azimuth=} too small or invalid; not moving the dome azimuth."
                 )
 
         if not self.follow_task.done():
@@ -535,13 +557,17 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         try:
             dome_el_motion_state = self.dome_remote.evt_elMotion.get()
             if dome_el_motion_state is None:
-                self.log.warning("No data for Dome elMotion event; not moving the dome")
+                self.log.warning(
+                    "No data for Dome elMotion event; not moving the dome elevation."
+                )
                 return
 
+            # TODO DM-40484 Stopping the motion before commanding a new one is
+            #  unnecessary and unwanted.
             # Stop the dome elevation axis, if moving, and wait for it to stop,
             # since the dome does not allow one move to supersede another.
             if dome_el_motion_state.state == MotionState.MOVING:
-                self.log.info("Stop existing dome elevation motion")
+                self.log.info("Stopping current dome elevation motion..")
                 self.dome_remote.evt_elMotion.flush()
                 await self.dome_remote.cmd_stop.set_start(
                     subSystemIds=SubSystemId.LWSCS, timeout=STD_TIMEOUT
@@ -555,7 +581,9 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             # Move the dome elevation axis and wait for the target event
             # and the first motion event (so motion has started).
             self.dome_remote.evt_elTarget.flush()
-            self.log.debug("Start dome elevation motion")
+            self.log.debug(
+                f"Start dome elevation motion with {desired_dome_elevation.position=}."
+            )
             await self.dome_remote.cmd_moveEl.set_start(
                 position=desired_dome_elevation.position,
                 timeout=STD_TIMEOUT,
@@ -564,7 +592,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         except asyncio.CancelledError:
             raise
         except Exception:
-            self.log.exception("move_dome_elevation failed")
+            self.log.exception("Failed to move dome in elevation.")
             raise
 
     async def move_dome_azimuth(self, desired_dome_azimuth):
@@ -584,15 +612,17 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             dome_az_motion_state = self.dome_remote.evt_azMotion.get()
             if dome_az_motion_state is None:
                 self.log.warning(
-                    "No data for the Dome azMotion event; not moving the dome"
+                    "No data for the Dome azMotion event; not moving the dome azimuth."
                 )
                 return
 
+            # TODO DM-40484 Stopping the motion before commanding a new one is
+            #  unnecessary and unwanted.
             # Stop the dome azimuth axis, if moving, and wait for it to stop,
             # since the dome does not allow one move to supersede another.
             if dome_az_motion_state.state == MotionState.MOVING:
                 self.dome_remote.evt_azMotion.flush()
-                self.log.info("Stop existing dome azimuth motion")
+                self.log.info("Stopping current dome azimuth motion.")
                 await self.dome_remote.cmd_stop.set_start(
                     subSystemIds=SubSystemId.AMCS, timeout=STD_TIMEOUT
                 )
@@ -605,7 +635,10 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             # Move the dome azimuth axis and wait for the target event
             # and the first motion event (so motion has started).
             self.dome_remote.evt_azTarget.flush()
-            self.log.debug("Start dome azimuth motion")
+            self.log.debug(
+                "Start dome azimuth motion with "
+                f"{desired_dome_azimuth.position=} and {desired_dome_azimuth.velocity=}."
+            )
             await self.dome_remote.cmd_moveAz.set_start(
                 position=desired_dome_azimuth.position,
                 velocity=desired_dome_azimuth.velocity,
@@ -615,7 +648,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         except asyncio.CancelledError:
             raise
         except Exception:
-            self.log.exception("move_dome_azimuth failed")
+            self.log.exception("Failed to move dome in azimuth.")
             raise
 
     async def start(self):

@@ -125,7 +125,9 @@ class MTDomeTrajectoryTestCase(
         """Test that dome follows telescope using the "simple" algorithm."""
         initial_elevation = 40
         async with self.make_csc(
-            initial_state=salobj.State.ENABLED, initial_elevation=initial_elevation
+            initial_state=salobj.State.ENABLED,
+            initial_elevation=initial_elevation,
+            config_dir=TEST_CONFIG_DIR,
         ):
             await self.assert_next_sample(self.remote.evt_followingMode, enabled=False)
             await self.assert_next_sample(
@@ -144,6 +146,7 @@ class MTDomeTrajectoryTestCase(
             min_del_to_move = self.csc.algorithm.max_delta_elevation
             initial_azimuth = 0
             for elevation, azimuth, move_elevation, move_azimuth, wait_dome_done in (
+                (math.nan, math.nan, False, False, True),
                 (initial_elevation, initial_azimuth, True, True, True),
                 (
                     initial_elevation,
@@ -163,6 +166,78 @@ class MTDomeTrajectoryTestCase(
                 ),
                 (85, 180, True, True, False),
                 (initial_elevation, initial_azimuth, True, True, True),
+            ):
+                await self.check_move(
+                    elevation=elevation,
+                    azimuth=azimuth,
+                    move_elevation=move_elevation,
+                    move_azimuth=move_azimuth,
+                    wait_dome_done=wait_dome_done,
+                )
+
+            await self.check_null_moves()
+
+            # Turn off following and make sure the dome does not follow
+            # the telescope.
+            await self.remote.cmd_setFollowingMode.set_start(
+                enable=False, timeout=STD_TIMEOUT
+            )
+            await self.assert_next_sample(self.remote.evt_followingMode, enabled=False)
+            # Pretend the telescope is pointing 180 deg away from the dome;
+            # that is more than enough to trigger a dome move, if following.
+            new_telescope_azimuth = self.dome_csc.get_target_azimuth().position + 180
+            await self.mtmount_controller.evt_target.set_write(
+                elevation=elevation, azimuth=new_telescope_azimuth, force_output=True
+            )
+            await self.assert_dome_azimuth(
+                expected_azimuth=None,
+                move_expected=False,
+            )
+
+    async def test_simple_follow_with_elevation_disabled(self):
+        """Test that dome follows telescope using the "simple" algorithm and
+        with elevation motion disabled."""
+        initial_elevation = 40
+        async with self.make_csc(
+            initial_state=salobj.State.ENABLED,
+            initial_elevation=initial_elevation,
+        ):
+            await self.assert_next_sample(self.remote.evt_followingMode, enabled=False)
+            await self.assert_next_sample(
+                self.dome_remote.evt_azMotion, state=MotionState.STOPPED
+            )
+            await self.assert_next_sample(
+                self.dome_remote.evt_elMotion, state=MotionState.STOPPED
+            )
+
+            await self.remote.cmd_setFollowingMode.set_start(
+                enable=True, timeout=STD_TIMEOUT
+            )
+            await self.assert_next_sample(self.remote.evt_followingMode, enabled=True)
+            assert self.csc.following_enabled
+
+            min_del_to_move = self.csc.algorithm.max_delta_elevation
+            initial_azimuth = 0
+            for elevation, azimuth, move_elevation, move_azimuth, wait_dome_done in (
+                (initial_elevation, initial_azimuth, False, True, True),
+                (
+                    initial_elevation,
+                    initial_azimuth
+                    + self.scaled_full_delta_azimuth(initial_elevation)
+                    + 0.001,
+                    False,
+                    True,
+                    True,
+                ),
+                (
+                    initial_elevation + min_del_to_move + 0.001,
+                    initial_azimuth,
+                    False,
+                    False,
+                    True,
+                ),
+                (85, 180, False, True, False),
+                (initial_elevation, initial_azimuth, False, True, True),
             ):
                 await self.check_move(
                     elevation=elevation,
@@ -452,7 +527,7 @@ class MTDomeTrajectoryTestCase(
             desired_config_env_name = desired_config_pkg_name.upper() + "_DIR"
             desird_config_pkg_dir = os.environ[desired_config_env_name]
             desired_config_dir = (
-                pathlib.Path(desird_config_pkg_dir) / "MTDomeTrajectory/v3"
+                pathlib.Path(desird_config_pkg_dir) / "MTDomeTrajectory/v4"
             )
             assert self.csc.get_config_pkg() == desired_config_pkg_name
             assert self.csc.config_dir == desired_config_dir
@@ -599,7 +674,11 @@ class MTDomeTrajectoryTestCase(
             f"move_elevation={move_elevation}, move_azimuth={move_azimuth}; "
             f"wait_dome_done={wait_dome_done}"
         )
-        assert move_azimuth or move_elevation
+        assert (
+            move_azimuth
+            or move_elevation
+            or (move_azimuth is False and move_elevation is False)
+        )
 
         # Wait until the dome is ready to receive a new MTMount target.
         await asyncio.wait_for(
