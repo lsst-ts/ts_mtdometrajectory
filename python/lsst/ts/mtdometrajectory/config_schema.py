@@ -28,7 +28,7 @@ CONFIG_SCHEMA = yaml.safe_load(
 $schema: http://json-schema.org/draft-07/schema#
 $id: https://github.com/lsst-ts/ts_mtdometrajectory/blob/master/python/lsst/ts/mtdometrajectory/config_schema.py  # noqa
 # title must end with one or more spaces followed by the schema version, which must begin with "v"
-title: MTDomeTrajectory v3
+title: MTDomeTrajectory v4
 description: Schema for MTDomeTrajectory configuration files
 type: object
 properties:
@@ -84,6 +84,12 @@ properties:
       This probably needs to be a bit larger than 0, to take into account noise in the reported value
       and/or essentially no light getting through in the last bit of travel.
     type: number
+  enable_el_motion:
+    description: >-
+      Enable elevation motion or not.
+      This should be set to False at least for the summit until the dome light and wind screen is supported.
+      For BTS and TTS this can be set to True.
+    type: boolean
 required:
   - algorithm_name
   - simple
@@ -93,6 +99,7 @@ required:
   - elevation_vignette_full
   - shutter_vignette_partial
   - shutter_vignette_full
+  - enable_el_motion
 additionalProperties: false
 """
 )
