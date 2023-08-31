@@ -242,14 +242,17 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         """
         if dome_elevation is None or telescope_elevation is None:
             return TelescopeVignetted.UNKNOWN
-        abs_elevation_difference = abs(
-            utils.angle_diff(dome_elevation, telescope_elevation).deg
-        )
-        if abs_elevation_difference < self.config.elevation_vignette_partial:
+        if self.enable_el_motion:
+            abs_elevation_difference = abs(
+                utils.angle_diff(dome_elevation, telescope_elevation).deg
+            )
+            if abs_elevation_difference < self.config.elevation_vignette_partial:
+                return TelescopeVignetted.NO
+            elif abs_elevation_difference < self.config.elevation_vignette_full:
+                return TelescopeVignetted.PARTIALLY
+            return TelescopeVignetted.FULLY
+        else:
             return TelescopeVignetted.NO
-        elif abs_elevation_difference < self.config.elevation_vignette_full:
-            return TelescopeVignetted.PARTIALLY
-        return TelescopeVignetted.FULLY
 
     def compute_vignetted_by_shutter(self, shutters_percent_open):
         """Compute the ``shutter`` field of the telescopeVignetted event.

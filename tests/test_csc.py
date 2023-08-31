@@ -129,6 +129,7 @@ class MTDomeTrajectoryTestCase(
             initial_elevation=initial_elevation,
             config_dir=TEST_CONFIG_DIR,
         ):
+            assert self.csc.enable_el_motion is True
             await self.assert_next_sample(self.remote.evt_followingMode, enabled=False)
             await self.assert_next_sample(
                 self.dome_remote.evt_azMotion, state=MotionState.STOPPED
@@ -202,6 +203,7 @@ class MTDomeTrajectoryTestCase(
             initial_state=salobj.State.ENABLED,
             initial_elevation=initial_elevation,
         ):
+            assert self.csc.enable_el_motion is False
             await self.assert_next_sample(self.remote.evt_followingMode, enabled=False)
             await self.assert_next_sample(
                 self.dome_remote.evt_azMotion, state=MotionState.STOPPED
@@ -273,6 +275,7 @@ class MTDomeTrajectoryTestCase(
         async with self.make_csc(
             initial_state=salobj.State.ENABLED, config_dir=TEST_CONFIG_DIR
         ):
+            assert self.csc.enable_el_motion is True
             await self.assert_next_sample(
                 self.dome_remote.evt_azMotion, state=MotionState.STOPPED
             )
@@ -444,6 +447,93 @@ class MTDomeTrajectoryTestCase(
                 topic=self.remote.evt_telescopeVignetted,
                 azimuth=TelescopeVignetted.NO,
                 elevation=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.FULLY,
+            )
+
+    async def test_telescope_vignetted_with_elevation_disabled(self):
+        # TODO DM-39421 expand these tests once the "vignetted" field
+        # is affected by the "shutter" field.
+
+        async with self.make_csc(initial_state=salobj.State.ENABLED):
+            assert self.csc.enable_el_motion is False
+            await self.assert_next_sample(
+                self.dome_remote.evt_azMotion, state=MotionState.STOPPED
+            )
+            await self.assert_next_sample(
+                self.dome_remote.evt_elMotion, state=MotionState.STOPPED
+            )
+            angle_margin = 0.01
+            shutter_margin = 0.01
+            config = self.csc.config
+            await self.assert_next_sample(self.remote.evt_followingMode, enabled=False)
+            azimuth_vignette_partial = config.azimuth_vignette_partial
+            azimuth_vignette_full = config.azimuth_vignette_full
+
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.UNKNOWN,
+                elevation=TelescopeVignetted.UNKNOWN,
+                shutter=TelescopeVignetted.UNKNOWN,
+                vignetted=TelescopeVignetted.UNKNOWN,
+            )
+
+            await self.check_shutter_vignette(
+                shutter_position=config.shutter_vignette_partial + shutter_margin,
+                expected_vignetting=TelescopeVignetted.NO,
+            )
+            await self.check_shutter_vignette(
+                shutter_position=config.shutter_vignette_partial - shutter_margin,
+                expected_vignetting=TelescopeVignetted.PARTIALLY,
+            )
+            await self.check_shutter_vignette(
+                shutter_position=config.shutter_vignette_full + shutter_margin,
+                expected_vignetting=TelescopeVignetted.PARTIALLY,
+            )
+            await self.check_shutter_vignette(
+                shutter_position=config.shutter_vignette_full - shutter_margin,
+                expected_vignetting=TelescopeVignetted.FULLY,
+            )
+
+            await self.publish_telescope_actual_elevation(elevation=0)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.UNKNOWN,
+                elevation=TelescopeVignetted.NO,
+                shutter=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.UNKNOWN,
+            )
+
+            await self.publish_telescope_actual_azimuth(azimuth=0)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.NO,
+                elevation=TelescopeVignetted.NO,
+                vignetted=TelescopeVignetted.NO,
+            )
+
+            # Move the dome far enough negative to vignette partially
+            dome_az = 0 - azimuth_vignette_partial - angle_margin
+            await self.dome_remote.cmd_moveAz.set_start(position=dome_az)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.PARTIALLY,
+                elevation=TelescopeVignetted.NO,
+                vignetted=TelescopeVignetted.PARTIALLY,
+            )
+            await self.assert_next_sample(
+                self.dome_remote.evt_azMotion, state=MotionState.MOVING
+            )
+            await self.assert_next_sample(
+                self.dome_remote.evt_azMotion, state=MotionState.STOPPED
+            )
+
+            # Change telescope azimuth far enough away on the other side
+            # of zero to fully vignette
+            telescope_az = dome_az + azimuth_vignette_full + angle_margin
+            await self.publish_telescope_actual_azimuth(azimuth=telescope_az)
+            await self.assert_next_sample(
+                topic=self.remote.evt_telescopeVignetted,
+                azimuth=TelescopeVignetted.FULLY,
                 vignetted=TelescopeVignetted.FULLY,
             )
 
