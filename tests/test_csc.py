@@ -164,7 +164,7 @@ class MTDomeTrajectoryTestCase(
                     False,
                     True,
                 ),
-                (85, 180, True, True, False),
+                (85, 180, True, True, True),
                 (initial_elevation, initial_azimuth, True, True, True),
             ):
                 await self.check_move(
@@ -236,7 +236,7 @@ class MTDomeTrajectoryTestCase(
                     False,
                     True,
                 ),
-                (85, 180, False, True, False),
+                (85, 180, False, True, True),
                 (initial_elevation, initial_azimuth, False, True, True),
             ):
                 await self.check_move(
@@ -705,7 +705,6 @@ class MTDomeTrajectoryTestCase(
         def expected_states(was_moving):
             if was_moving:
                 return [
-                    MotionState.STOPPING,
                     MotionState.STOPPED,
                     MotionState.MOVING,
                 ]

@@ -24,7 +24,7 @@ __all__ = ["MockDome"]
 import asyncio
 
 from lsst.ts import salobj, simactuators, utils
-from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
+from lsst.ts.idl.enums.MTDome import MotionState
 
 
 class MockDome(salobj.BaseCsc):
@@ -41,12 +41,6 @@ class MockDome(salobj.BaseCsc):
         as real CSCs should start up in `State.STANDBY`, the default.
     initial_elevation : `float`, optional
         Initial elevation.
-    azimuth_velocity : `float`, optional
-        Maximum azimuth velocity (deg/sec)
-    azimuth_acceleration : `float`, optional
-        Maximum azimuth acceleration (deg/sec^2)
-    elevation_velocity : `float`, optional
-        Maximum elevation velocity (deg/sec)
     """
 
     valid_simulation_modes = [0]
@@ -56,19 +50,16 @@ class MockDome(salobj.BaseCsc):
         self,
         initial_state,
         initial_elevation=0,
-        elevation_velocity=3,
-        azimuth_velocity=3,
-        azimuth_acceleration=1,
     ):
         self.elevation_actuator = simactuators.PointToPointActuator(
             min_position=0,
             max_position=90,
-            speed=elevation_velocity,
+            speed=20,
             start_position=initial_elevation,
         )
         self.azimuth_actuator = simactuators.CircularTrackingActuator(
-            max_velocity=azimuth_velocity,
-            max_acceleration=azimuth_acceleration,
+            max_velocity=20,
+            max_acceleration=10,
             dtmax_track=0,
         )
         self.telemetry_interval = 0.2  # seconds
@@ -96,8 +87,6 @@ class MockDome(salobj.BaseCsc):
     async def close_tasks(self):
         await super().close_tasks()
         self.telemetry_loop_task.cancel()
-        await self.stop_azimuth()
-        await self.stop_elevation()
 
     def get_target_elevation(self):
         """Get the target elevation as an
@@ -117,8 +106,6 @@ class MockDome(salobj.BaseCsc):
 
     async def do_moveEl(self, data):
         self.assert_enabled()
-        if not self.elevation_done_task.done():
-            raise salobj.ExpectedError("Elevation slew not done.")
         self.elevation_actuator.set_position(position=data.position)
         await self.evt_elTarget.set_write(
             position=data.position, velocity=0, force_output=True
@@ -135,8 +122,6 @@ class MockDome(salobj.BaseCsc):
 
     async def do_moveAz(self, data):
         self.assert_enabled()
-        if not self.azimuth_done_task.done():
-            raise salobj.ExpectedError("Azimuth slew not done.")
         self.azimuth_actuator.set_target(
             position=data.position,
             velocity=data.velocity,
@@ -156,21 +141,12 @@ class MockDome(salobj.BaseCsc):
             self.report_azimuth_done(in_position=True, motion_state=end_motion_state)
         )
 
-    async def do_stop(self, data):
-        self.assert_enabled()
-        if data.subSystemIds & SubSystemId.AMCS:
-            await self.stop_azimuth()
-        if data.subSystemIds & SubSystemId.LWSCS:
-            await self.stop_elevation()
-
     async def handle_summary_state(self):
         if self.disabled_or_enabled:
             if self.telemetry_loop_task.done():
                 self.telemetry_loop_task = asyncio.create_task(self.telemetry_loop())
         else:
             self.telemetry_loop_task.cancel()
-            await self.stop_azimuth()
-            await self.stop_elevation()
 
     async def report_azimuth_done(self, in_position, motion_state):
         """Wait for azimuth to stop moving and report evt_azMotion.
@@ -207,47 +183,6 @@ class MockDome(salobj.BaseCsc):
         await self.evt_elMotion.set_write(
             state=motion_state,
             inPosition=in_position,
-        )
-
-    async def stop_azimuth(self):
-        """Stop the azimuth actuator and the done task.
-
-        Report not in position, if changed.
-
-        Unlike do_stopAz this does not require that the CSC is enabled.
-        """
-        self.azimuth_actuator.stop()
-        if self.azimuth_done_task.done():
-            return
-        self.azimuth_done_task.cancel()
-        await self.evt_azMotion.set_write(
-            state=MotionState.STOPPING,
-            inPosition=False,
-        )
-        self.azimuth_done_task = asyncio.create_task(
-            self.report_azimuth_done(
-                in_position=False, motion_state=MotionState.STOPPED
-            )
-        )
-
-    async def stop_elevation(self):
-        """Stop the elevation actuator and the done task.
-
-        Report not in position, if changed.
-
-        Unlike do_stopEl this does not require that the CSC is enabled.
-        """
-        self.elevation_actuator.stop()
-        if self.elevation_done_task.done():
-            return
-        self.elevation_done_task.cancel()
-        await self.evt_elMotion.set_write(
-            state=MotionState.STOPPING,
-            inPosition=False,
-        )
-        await self.evt_elMotion.set_write(
-            state=MotionState.STOPPED,
-            inPosition=False,
         )
 
     async def telemetry_loop(self):

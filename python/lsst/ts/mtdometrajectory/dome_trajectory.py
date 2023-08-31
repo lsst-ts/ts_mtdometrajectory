@@ -26,7 +26,6 @@ import math
 
 import yaml
 from lsst.ts import salobj, simactuators, utils
-from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
 from lsst.ts.idl.enums.MTDomeTrajectory import TelescopeVignetted
 
 from . import __version__
@@ -562,22 +561,6 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                 )
                 return
 
-            # TODO DM-40484 Stopping the motion before commanding a new one is
-            #  unnecessary and unwanted.
-            # Stop the dome elevation axis, if moving, and wait for it to stop,
-            # since the dome does not allow one move to supersede another.
-            if dome_el_motion_state.state == MotionState.MOVING:
-                self.log.info("Stopping current dome elevation motion..")
-                self.dome_remote.evt_elMotion.flush()
-                await self.dome_remote.cmd_stop.set_start(
-                    subSystemIds=SubSystemId.LWSCS, timeout=STD_TIMEOUT
-                )
-
-                while dome_el_motion_state.state != MotionState.STOPPED:
-                    dome_el_motion_state = await self.dome_remote.evt_elMotion.next(
-                        flush=False
-                    )
-
             # Move the dome elevation axis and wait for the target event
             # and the first motion event (so motion has started).
             self.dome_remote.evt_elTarget.flush()
@@ -615,22 +598,6 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                     "No data for the Dome azMotion event; not moving the dome azimuth."
                 )
                 return
-
-            # TODO DM-40484 Stopping the motion before commanding a new one is
-            #  unnecessary and unwanted.
-            # Stop the dome azimuth axis, if moving, and wait for it to stop,
-            # since the dome does not allow one move to supersede another.
-            if dome_az_motion_state.state == MotionState.MOVING:
-                self.dome_remote.evt_azMotion.flush()
-                self.log.info("Stopping current dome azimuth motion.")
-                await self.dome_remote.cmd_stop.set_start(
-                    subSystemIds=SubSystemId.AMCS, timeout=STD_TIMEOUT
-                )
-
-                while dome_az_motion_state.state != MotionState.STOPPED:
-                    dome_az_motion_state = await self.dome_remote.evt_azMotion.next(
-                        flush=False
-                    )
 
             # Move the dome azimuth axis and wait for the target event
             # and the first motion event (so motion has started).
