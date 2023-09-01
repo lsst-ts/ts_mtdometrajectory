@@ -6,6 +6,22 @@
 Version History
 ###############
 
+v0.13.1
+-------
+
+* Make sure that the azimuth and elevation motions are not stopped when a new move command is issued.
+  Note that the Simactuators don't support stopping an accelerated motion.
+  Fortunately this only affects the unit tests since the dome simulator is not used elsewhere.
+* Improve elevation vignetting reporting when elevation is disabled.
+
+Requires:
+
+* ts_salobj 7.2
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 16
+
 v0.13.0
 -------
 

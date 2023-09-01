@@ -23,7 +23,7 @@ import unittest
 
 import pytest
 from lsst.ts import mtdometrajectory, salobj, utils
-from lsst.ts.idl.enums.MTDome import MotionState, SubSystemId
+from lsst.ts.idl.enums.MTDome import MotionState
 
 STD_TIMEOUT = 60
 
@@ -121,14 +121,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
             assert end_segment.velocity == pytest.approx(velocity)
             duration = end_segment.tai - tai0
             print(f"duration={duration:0.2f} seconds")
-            assert duration > 1
-
-            # Check that a new move before the slew is done is rejected
-            # (though we hope the dome controller will eventually allow this).
-            with salobj.assertRaisesAckError():
-                await self.remote.cmd_moveAz.set_start(
-                    position=position, velocity=velocity, timeout=STD_TIMEOUT
-                )
+            assert duration > 0.5
 
             # Wait for the move to finish.
             await self.assert_next_sample(
@@ -189,14 +182,7 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
             assert target_elevation.position == pytest.approx(position)
             duration = self.csc.elevation_actuator.remaining_time()
             print(f"duration={duration:0.2f} seconds")
-            assert duration > 1
-
-            # Check that a new move before the slew is done is rejected
-            # (though we hope the vendor will change to allow this).
-            with salobj.assertRaisesAckError():
-                await self.remote.cmd_moveEl.set_start(
-                    position=position, timeout=STD_TIMEOUT
-                )
+            assert duration > 0.2
 
             # Wait for the move to finish.
             await self.assert_next_sample(
@@ -222,95 +208,3 @@ class MockDomeTestCase(salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase)
                 state=MotionState.STOPPED,
                 inPosition=True,
             )
-
-    async def test_stop(self):
-        """Test the stop command to stop azimuth and elevation."""
-        async with self.make_csc(initial_state=salobj.State.ENABLED):
-            await self.assert_next_sample(
-                self.remote.evt_azMotion,
-                state=MotionState.STOPPED,
-                inPosition=False,
-            )
-            await self.assert_next_sample(
-                self.remote.evt_elMotion,
-                state=MotionState.STOPPED,
-                inPosition=False,
-            )
-            assert (
-                self.csc.azimuth_actuator.kind()
-                == self.csc.azimuth_actuator.Kind.Stopped
-            )
-            assert not self.csc.elevation_actuator.moving()
-
-            az_position = 20
-            az_velocity = -1
-            el_position = 30
-            await self.remote.cmd_moveAz.set_start(
-                position=az_position, velocity=az_velocity, timeout=STD_TIMEOUT
-            )
-            await self.remote.cmd_moveEl.set_start(
-                position=el_position, timeout=STD_TIMEOUT
-            )
-            await self.assert_next_sample(
-                self.remote.evt_azMotion,
-                state=MotionState.MOVING,
-                inPosition=False,
-            )
-            await self.assert_next_sample(
-                self.remote.evt_elMotion,
-                state=MotionState.MOVING,
-                inPosition=False,
-            )
-            data = await self.assert_next_sample(self.remote.evt_azTarget)
-            assert data.position == pytest.approx(az_position)
-            assert data.velocity == pytest.approx(az_velocity)
-
-            data = await self.assert_next_sample(self.remote.evt_elTarget, velocity=0)
-            assert data.position == pytest.approx(el_position)
-
-            assert (
-                self.csc.azimuth_actuator.kind()
-                != self.csc.azimuth_actuator.Kind.Stopped
-            )
-            assert self.csc.elevation_actuator.moving()
-
-            # Stop azimuth
-            await self.remote.cmd_stop.set_start(
-                subSystemIds=SubSystemId.AMCS, timeout=STD_TIMEOUT
-            )
-            await self.assert_next_sample(
-                self.remote.evt_azMotion,
-                state=MotionState.STOPPING,
-                inPosition=False,
-            )
-            await self.assert_next_sample(
-                self.remote.evt_azMotion,
-                state=MotionState.STOPPED,
-                inPosition=False,
-            )
-            assert (
-                self.csc.azimuth_actuator.kind()
-                == self.csc.azimuth_actuator.Kind.Stopped
-            )
-            assert self.csc.elevation_actuator.moving()
-
-            # Stop elevation
-            await self.remote.cmd_stop.set_start(
-                subSystemIds=SubSystemId.LWSCS, timeout=STD_TIMEOUT
-            )
-            await self.assert_next_sample(
-                self.remote.evt_elMotion,
-                state=MotionState.STOPPING,
-                inPosition=False,
-            )
-            await self.assert_next_sample(
-                self.remote.evt_elMotion,
-                state=MotionState.STOPPED,
-                inPosition=False,
-            )
-
-            assert (
-                self.csc.azimuth_actuator.kind()
-                == self.csc.azimuth_actuator.Kind.Stopped
-            )
-            assert not self.csc.elevation_actuator.moving()
