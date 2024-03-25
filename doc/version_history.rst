@@ -13,6 +13,7 @@ v0.13.1
   Note that the Simactuators don't support stopping an accelerated motion.
   Fortunately this only affects the unit tests since the dome simulator is not used elsewhere.
 * Improve elevation vignetting reporting when elevation is disabled.
+* Update the version of ts-conda-build to 0.4 in the conda recipe.
 
 Requires:
 
