@@ -368,7 +368,7 @@ class MTDomeTrajectoryTestCase(
                 topic=self.remote.evt_telescopeVignetted,
                 azimuth=TelescopeVignetted.PARTIALLY,
                 elevation=TelescopeVignetted.FULLY,
-                vignetted=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.PARTIALLY,
             )
 
             # Center dome in azimuth, preparatory to testing elevation.
@@ -377,7 +377,7 @@ class MTDomeTrajectoryTestCase(
                 topic=self.remote.evt_telescopeVignetted,
                 azimuth=TelescopeVignetted.NO,
                 elevation=TelescopeVignetted.FULLY,
-                vignetted=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.NO,
             )
 
             # Move dome elevation to the same large elevation.
@@ -389,7 +389,7 @@ class MTDomeTrajectoryTestCase(
                 topic=self.remote.evt_telescopeVignetted,
                 azimuth=TelescopeVignetted.NO,
                 elevation=TelescopeVignetted.PARTIALLY,
-                vignetted=TelescopeVignetted.PARTIALLY,
+                vignetted=TelescopeVignetted.NO,
             )
             await self.assert_next_sample(
                 topic=self.remote.evt_telescopeVignetted,
@@ -414,7 +414,7 @@ class MTDomeTrajectoryTestCase(
                 topic=self.remote.evt_telescopeVignetted,
                 azimuth=TelescopeVignetted.NO,
                 elevation=TelescopeVignetted.PARTIALLY,
-                vignetted=TelescopeVignetted.PARTIALLY,
+                vignetted=TelescopeVignetted.NO,
             )
 
             # Increase telescope elevation high enough to vignette fully.
@@ -425,7 +425,7 @@ class MTDomeTrajectoryTestCase(
                 topic=self.remote.evt_telescopeVignetted,
                 azimuth=TelescopeVignetted.NO,
                 elevation=TelescopeVignetted.FULLY,
-                vignetted=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.NO,
             )
 
             # Set telescope elevation low enough to vignette partially.
@@ -436,7 +436,7 @@ class MTDomeTrajectoryTestCase(
                 topic=self.remote.evt_telescopeVignetted,
                 azimuth=TelescopeVignetted.NO,
                 elevation=TelescopeVignetted.PARTIALLY,
-                vignetted=TelescopeVignetted.PARTIALLY,
+                vignetted=TelescopeVignetted.NO,
             )
 
             # Set telescope elevation low enough to vignette fully.
@@ -447,7 +447,7 @@ class MTDomeTrajectoryTestCase(
                 topic=self.remote.evt_telescopeVignetted,
                 azimuth=TelescopeVignetted.NO,
                 elevation=TelescopeVignetted.FULLY,
-                vignetted=TelescopeVignetted.FULLY,
+                vignetted=TelescopeVignetted.NO,
             )
 
     async def test_telescope_vignetted_with_elevation_disabled(self):
