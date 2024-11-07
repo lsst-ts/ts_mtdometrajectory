@@ -26,7 +26,7 @@ import math
 
 import yaml
 from lsst.ts import salobj, simactuators, utils
-from lsst.ts.idl.enums.MTDomeTrajectory import TelescopeVignetted
+from lsst.ts.xml.enums.MTDomeTrajectory import TelescopeVignetted
 
 from . import __version__
 from .base_algorithm import AlgorithmRegistry
@@ -161,24 +161,27 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def compute_vignetted_by_any(self, *, azimuth, elevation, shutter):
         """Compute the ``vignetted`` field of the telescopeVignetted event."""
         if (
-            azimuth == TelescopeVignetted.UNKNOWN
-            or elevation == TelescopeVignetted.UNKNOWN
+            azimuth
+            == TelescopeVignetted.UNKNOWN
+            # or elevation == TelescopeVignetted.UNKNOWN
             # TODO DM-39421 uncomment this once shutter info is available
             # from the real MTDome.
             # or shutter == TelescopeVignetted.UNKNOWN
         ):
             return TelescopeVignetted.UNKNOWN
         elif (
-            azimuth == TelescopeVignetted.NO
-            and elevation == TelescopeVignetted.NO
+            azimuth
+            == TelescopeVignetted.NO
+            # and elevation == TelescopeVignetted.NO
             # TODO DM-39421 uncomment this once shutter info is available
             # from the real MTDome.
             # and shutter == TelescopeVignetted.NO
         ):
             return TelescopeVignetted.NO
         elif (
-            azimuth == TelescopeVignetted.FULLY
-            or elevation == TelescopeVignetted.FULLY
+            azimuth
+            == TelescopeVignetted.FULLY
+            # or elevation == TelescopeVignetted.FULLY
             # TODO DM-39421 uncomment this once shutter info is available
             # from the real MTDome.
             # or shutter == TelescopeVignetted.FULLY

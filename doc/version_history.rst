@@ -6,6 +6,20 @@
 Version History
 ###############
 
+v0.13.2
+-------
+
+* Use ts_xml instead of ts_idl.
+* Remove elevation from vignetting consideration.
+
+Requires:
+
+* ts_salobj 7.2
+* ts_config_mttcs
+* ts_simactuators 2
+* ts_utils 1
+* IDL files for MTDomeTrajectory, MTDome, and MTMount built from ts_xml 16
+
 v0.13.1
 -------
 

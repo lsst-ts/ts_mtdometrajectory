@@ -24,7 +24,7 @@ __all__ = ["MockDome"]
 import asyncio
 
 from lsst.ts import salobj, simactuators, utils
-from lsst.ts.idl.enums.MTDome import MotionState
+from lsst.ts.xml.enums.MTDome import MotionState
 
 
 class MockDome(salobj.BaseCsc):
@@ -155,7 +155,7 @@ class MockDome(salobj.BaseCsc):
         ----------
         in_position : `bool`
             Is the axis in position at the end of the move?
-        motion_state : `lsst.ts.idl.MotionState`
+        motion_state : `lsst.ts.xml.MotionState`
             Motion state at end of move.
         """
         end_tai = self.azimuth_actuator.path.segments[-1].tai
@@ -174,7 +174,7 @@ class MockDome(salobj.BaseCsc):
         ----------
         in_position : `bool`
             Is the axis in position at the end of the move?
-        motion_state : `lsst.ts.idl.MotionState`
+        motion_state : `lsst.ts.xml.MotionState`
             Motion state at end of move.
         """
         duration = self.elevation_actuator.remaining_time()

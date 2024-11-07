@@ -23,7 +23,7 @@ import unittest
 
 import pytest
 from lsst.ts import mtdometrajectory, salobj, utils
-from lsst.ts.idl.enums.MTDome import MotionState
+from lsst.ts.xml.enums.MTDome import MotionState
 
 STD_TIMEOUT = 60
 
