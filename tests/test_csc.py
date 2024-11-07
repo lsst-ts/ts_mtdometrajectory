@@ -30,8 +30,8 @@ import unittest
 import pytest
 import yaml
 from lsst.ts import mtdometrajectory, salobj, utils
-from lsst.ts.idl.enums.MTDome import MotionState
-from lsst.ts.idl.enums.MTDomeTrajectory import TelescopeVignetted
+from lsst.ts.xml.enums.MTDome import MotionState
+from lsst.ts.xml.enums.MTDomeTrajectory import TelescopeVignetted
 
 logging.basicConfig()
 logger = logging.getLogger()

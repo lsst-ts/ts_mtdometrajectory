@@ -26,7 +26,7 @@ import math
 
 import yaml
 from lsst.ts import salobj, simactuators, utils
-from lsst.ts.idl.enums.MTDomeTrajectory import TelescopeVignetted
+from lsst.ts.xml.enums.MTDomeTrajectory import TelescopeVignetted
 
 from . import __version__
 from .base_algorithm import AlgorithmRegistry
