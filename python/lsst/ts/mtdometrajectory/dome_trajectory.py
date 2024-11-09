@@ -34,7 +34,7 @@ from .config_schema import CONFIG_SCHEMA
 from .elevation_azimuth import ElevationAzimuth
 
 # Timeout for commands that should be executed quickly
-STD_TIMEOUT = 5
+STD_TIMEOUT = 120
 
 # Time (sec) between polling for vignetting.
 VIGNETTING_MONITOR_INTERVAL = 0.1
@@ -533,6 +533,8 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                 self.log.warning(
                     f"{desired_dome_azimuth=} too small or invalid; not moving the dome azimuth."
                 )
+        else:
+            self.log.debug("Previous dome azimuth motion still not finished.")
 
         if not self.follow_task.done():
             self.follow_task.set_result((moved_elevation, moved_azimuth))
