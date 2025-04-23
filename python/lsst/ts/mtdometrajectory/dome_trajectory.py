@@ -161,30 +161,21 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
     def compute_vignetted_by_any(self, *, azimuth, elevation, shutter):
         """Compute the ``vignetted`` field of the telescopeVignetted event."""
         if (
-            azimuth
-            == TelescopeVignetted.UNKNOWN
+            azimuth == TelescopeVignetted.UNKNOWN
             # or elevation == TelescopeVignetted.UNKNOWN
-            # TODO DM-39421 uncomment this once shutter info is available
-            # from the real MTDome.
-            # or shutter == TelescopeVignetted.UNKNOWN
+            or shutter == TelescopeVignetted.UNKNOWN
         ):
             return TelescopeVignetted.UNKNOWN
         elif (
-            azimuth
-            == TelescopeVignetted.NO
+            azimuth == TelescopeVignetted.NO
             # and elevation == TelescopeVignetted.NO
-            # TODO DM-39421 uncomment this once shutter info is available
-            # from the real MTDome.
-            # and shutter == TelescopeVignetted.NO
+            and shutter == TelescopeVignetted.NO
         ):
             return TelescopeVignetted.NO
         elif (
-            azimuth
-            == TelescopeVignetted.FULLY
+            azimuth == TelescopeVignetted.FULLY
             # or elevation == TelescopeVignetted.FULLY
-            # TODO DM-39421 uncomment this once shutter info is available
-            # from the real MTDome.
-            # or shutter == TelescopeVignetted.FULLY
+            or shutter == TelescopeVignetted.FULLY
         ):
             return TelescopeVignetted.FULLY
         return TelescopeVignetted.PARTIALLY
@@ -380,7 +371,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         return None if telescope_state is None else telescope_state.summaryState
 
     async def handle_summary_state(self):
-        if not self.summary_state == salobj.State.ENABLED:
+        if self.summary_state != salobj.State.ENABLED:
             self.move_dome_azimuth_task.cancel()
             self.move_dome_elevation_task.cancel()
             self.report_vignetted_task.cancel()
@@ -492,50 +483,60 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
             and self.dome_remote.evt_elMotion.has_data
             and self.enable_el_motion
         ):
-            dome_target_elevation = self.get_dome_target_elevation()
-            desired_dome_elevation = self.algorithm.desired_dome_elevation(
-                dome_target_elevation=dome_target_elevation,
-                telescope_target=self.telescope_target,
-                next_telescope_target=self.next_telescope_target,
-            )
-            if desired_dome_elevation is not None and math.isfinite(
-                desired_dome_elevation.position
-            ):
-                moved_elevation = True
-                self.move_dome_elevation_task = asyncio.create_task(
-                    self.move_dome_elevation(desired_dome_elevation)
-                )
-            else:
-                self.log.warning(
-                    f"{desired_dome_elevation=} too small or invalid; not moving the dome elevation."
-                )
+            moved_elevation = self.get_moved_elevation()
 
         if (
             self.move_dome_azimuth_task.done()
             and self.dome_remote.evt_azMotion.has_data
         ):
-            dome_target_azimuth = self.get_dome_target_azimuth()
-            desired_dome_azimuth = self.algorithm.desired_dome_azimuth(
-                dome_target_azimuth=dome_target_azimuth,
-                telescope_target=self.telescope_target,
-                next_telescope_target=self.next_telescope_target,
-            )
-            if (
-                desired_dome_azimuth is not None
-                and math.isfinite(desired_dome_azimuth.position)
-                and math.isfinite(desired_dome_azimuth.velocity)
-            ):
-                moved_azimuth = True
-                self.move_dome_azimuth_task = asyncio.create_task(
-                    self.move_dome_azimuth(desired_dome_azimuth)
-                )
-            else:
-                self.log.warning(
-                    f"{desired_dome_azimuth=} too small or invalid; not moving the dome azimuth."
-                )
+            moved_azimuth = self.get_moved_azimuth()
 
         if not self.follow_task.done():
             self.follow_task.set_result((moved_elevation, moved_azimuth))
+
+    def get_moved_elevation(self):
+        moved_elevation = False
+        dome_target_elevation = self.get_dome_target_elevation()
+        desired_dome_elevation = self.algorithm.desired_dome_elevation(
+            dome_target_elevation=dome_target_elevation,
+            telescope_target=self.telescope_target,
+            next_telescope_target=self.next_telescope_target,
+        )
+        if desired_dome_elevation is not None and math.isfinite(
+            desired_dome_elevation.position
+        ):
+            moved_elevation = True
+            self.move_dome_elevation_task = asyncio.create_task(
+                self.move_dome_elevation(desired_dome_elevation)
+            )
+        else:
+            self.log.warning(
+                f"{desired_dome_elevation=} too small or invalid; not moving the dome elevation."
+            )
+        return moved_elevation
+
+    def get_moved_azimuth(self):
+        moved_azimuth = False
+        dome_target_azimuth = self.get_dome_target_azimuth()
+        desired_dome_azimuth = self.algorithm.desired_dome_azimuth(
+            dome_target_azimuth=dome_target_azimuth,
+            telescope_target=self.telescope_target,
+            next_telescope_target=self.next_telescope_target,
+        )
+        if (
+            desired_dome_azimuth is not None
+            and math.isfinite(desired_dome_azimuth.position)
+            and math.isfinite(desired_dome_azimuth.velocity)
+        ):
+            moved_azimuth = True
+            self.move_dome_azimuth_task = asyncio.create_task(
+                self.move_dome_azimuth(desired_dome_azimuth)
+            )
+        else:
+            self.log.warning(
+                f"{desired_dome_azimuth=} too small or invalid; not moving the dome azimuth."
+            )
+        return moved_azimuth
 
     def make_follow_task(self):
         """Make and return a task that is set when the follow method runs.
