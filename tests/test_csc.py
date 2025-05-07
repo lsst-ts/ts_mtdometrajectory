@@ -70,9 +70,7 @@ class MTDomeTrajectoryTestCase(
         ) as self.dome_remote, salobj.Controller(
             "MTMount"
         ) as self.mtmount_controller:
-            # TODO DM-39421 uncomment this once shutter info is available
-            # from the real MTDome.
-            # await self.write_dome_shutter_open_percent([100, 100])
+            await self.write_dome_shutter_open_percent([100, 100])
             await self.mtmount_controller.evt_summaryState.set_write(
                 summaryState=salobj.State.ENABLED
             )
@@ -269,9 +267,6 @@ class MTDomeTrajectoryTestCase(
             )
 
     async def test_telescope_vignetted(self):
-        # TODO DM-39421 expand these tests once the "vignetted" field
-        # is affected by the "shutter" field.
-
         async with self.make_csc(
             initial_state=salobj.State.ENABLED, config_dir=TEST_CONFIG_DIR
         ):
@@ -325,6 +320,9 @@ class MTDomeTrajectoryTestCase(
                 shutter=TelescopeVignetted.FULLY,
                 vignetted=TelescopeVignetted.UNKNOWN,
             )
+
+            # Reset shutter position.
+            await self.write_dome_shutter_open_percent([100, 100])
 
             await self.publish_telescope_actual_azimuth(azimuth=0)
             await self.assert_next_sample(
@@ -451,9 +449,6 @@ class MTDomeTrajectoryTestCase(
             )
 
     async def test_telescope_vignetted_with_elevation_disabled(self):
-        # TODO DM-39421 expand these tests once the "vignetted" field
-        # is affected by the "shutter" field.
-
         async with self.make_csc(initial_state=salobj.State.ENABLED):
             assert self.csc.enable_el_motion is False
             await self.assert_next_sample(
@@ -502,6 +497,9 @@ class MTDomeTrajectoryTestCase(
                 shutter=TelescopeVignetted.FULLY,
                 vignetted=TelescopeVignetted.UNKNOWN,
             )
+
+            # Reset shutter position.
+            await self.write_dome_shutter_open_percent([100, 100])
 
             await self.publish_telescope_actual_azimuth(azimuth=0)
             await self.assert_next_sample(
