@@ -8,6 +8,23 @@ Version History
 
 .. towncrier release notes start
 
+v0.14.0 (2025-05-07)
+====================
+
+New Features
+------------
+
+- Enabled checking for shutter vignetting. (`DM-39421 <https://rubinobs.atlassian.net//browse/DM-39421>`_)
+- Switched to towncrier. (`DM-39421 <https://rubinobs.atlassian.net//browse/DM-39421>`_)
+
+
+Bug Fixes
+---------
+
+- Fixed package version module generation. (`DM-39421 <https://rubinobs.atlassian.net//browse/DM-39421>`_)
+- Updated dome_trajectory to increse timeout in moving the dome. (`DM-39421 <https://rubinobs.atlassian.net//browse/DM-39421>`_)
+
+
 v0.13.2
 -------
 
