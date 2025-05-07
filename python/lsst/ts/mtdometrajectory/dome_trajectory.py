@@ -33,7 +33,7 @@ from .base_algorithm import AlgorithmRegistry
 from .config_schema import CONFIG_SCHEMA
 from .elevation_azimuth import ElevationAzimuth
 
-# Timeout for commands that should be executed quickly
+# Timeout for commands [s].
 STD_TIMEOUT = 120
 
 # Time (sec) between polling for vignetting.
