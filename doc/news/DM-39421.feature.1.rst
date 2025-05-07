@@ -1,1 +1,0 @@
-Enabled checking for shutter vignetting.
