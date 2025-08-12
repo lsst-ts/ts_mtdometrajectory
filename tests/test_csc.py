@@ -47,6 +47,8 @@ RAD_PER_DEG = math.pi / 180
 class MTDomeTrajectoryTestCase(
     salobj.BaseCscTestCase, unittest.IsolatedAsyncioTestCase
 ):
+    _randomize_topic_subname = True
+
     @contextlib.asynccontextmanager
     async def make_csc(
         self,
@@ -449,7 +451,11 @@ class MTDomeTrajectoryTestCase(
             )
 
     async def test_telescope_vignetted_with_elevation_disabled(self):
-        async with self.make_csc(initial_state=salobj.State.ENABLED):
+        async with self.make_csc(
+            initial_state=salobj.State.ENABLED,
+            config_dir=TEST_CONFIG_DIR,
+            override="valid_no_el_motion.yaml",
+        ):
             assert self.csc.enable_el_motion is False
             await self.assert_next_sample(
                 self.dome_remote.evt_azMotion, state=MotionState.STOPPED
@@ -557,6 +563,7 @@ class MTDomeTrajectoryTestCase(
         other_shutter_position = (
             0 if expected_vignetting == TelescopeVignetted.FULLY else 100
         )
+
         for shutter_positions in (
             [shutter_position, other_shutter_position],
             [other_shutter_position, shutter_position],
@@ -576,6 +583,7 @@ class MTDomeTrajectoryTestCase(
                     await self.dome_csc.tel_apertureShutter.set_write(
                         positionActual=[different_shutter_position] * 2
                     )
+
                     await self.assert_next_sample(
                         topic=self.remote.evt_telescopeVignetted,
                         shutter=different_vignetted,
@@ -584,6 +592,7 @@ class MTDomeTrajectoryTestCase(
                 await self.dome_csc.tel_apertureShutter.set_write(
                     positionActual=shutter_positions
                 )
+
                 await self.assert_next_sample(
                     topic=self.remote.evt_telescopeVignetted,
                     shutter=expected_vignetting,
@@ -650,9 +659,10 @@ class MTDomeTrajectoryTestCase(
             assert settings.algorithmName == "simple"
             # max_delta_elevation and max_delta_azimuth are hard coded
             # in data/config/valid.yaml
-            assert yaml.safe_load(settings.algorithmConfig) == dict(
-                max_delta_azimuth=7.1, max_delta_elevation=5.5
-            )
+            assert yaml.safe_load(settings.algorithmConfig) == {
+                "max_delta_azimuth": 7.1,
+                "max_delta_elevation": 5.5,
+            }
 
     async def assert_dome_azimuth(self, expected_azimuth, move_expected):
         """Check the Dome and MTDomeController commanded azimuth.

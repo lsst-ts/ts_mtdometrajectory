@@ -407,6 +407,7 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
                     dome_azimuth = self.get_dome_azimuth()
                     dome_elevation = self.get_dome_elevation()
                     shutters_percent_open = self.get_shutters_percent_open()
+
                     azimuth = self.compute_vignetted_by_azimuth(
                         dome_azimuth=dome_azimuth,
                         telescope_azimuth=telescope_azimuth,
