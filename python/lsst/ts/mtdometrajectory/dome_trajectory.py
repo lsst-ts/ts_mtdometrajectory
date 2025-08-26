@@ -370,24 +370,37 @@ class MTDomeTrajectory(salobj.ConfigurableCsc):
         telescope_state = self.mtmount_remote.evt_summaryState.get()
         return None if telescope_state is None else telescope_state.summaryState
 
-    async def handle_summary_state(self):
-        if self.summary_state != salobj.State.ENABLED:
-            self.move_dome_azimuth_task.cancel()
-            self.move_dome_elevation_task.cancel()
-            self.report_vignetted_task.cancel()
-            await self.evt_followingMode.set_write(enabled=False)
-        if self.disabled_or_enabled:
-            if self.report_vignetted_task.done():
-                self.report_vignetted_task = asyncio.create_task(
-                    self.report_vignetted_loop()
-                )
-        else:
-            self.report_vignetted_task.cancel()
-            await self.evt_telescopeVignetted.set_write(
-                vignetted=TelescopeVignetted.UNKNOWN,
-                azimuth=TelescopeVignetted.UNKNOWN,
-                shutter=TelescopeVignetted.UNKNOWN,
+    async def end_start(self, data):
+        """Begin do_start; called before state changes.
+
+        Parameters
+        ----------
+        data : `DataType`
+            Command data
+        """
+        if self.report_vignetted_task.done():
+            self.report_vignetted_task = asyncio.create_task(
+                self.report_vignetted_loop()
             )
+        await self.evt_followingMode.set_write(enabled=False)
+
+    async def begin_standby(self, data) -> None:
+        """Begin do_standby; called before the state changes.
+
+        Parameters
+        ----------
+        data : `DataType`
+            Command data
+        """
+        self.move_dome_azimuth_task.cancel()
+        self.move_dome_elevation_task.cancel()
+        self.report_vignetted_task.cancel()
+        await self.evt_followingMode.set_write(enabled=False)
+        await self.evt_telescopeVignetted.set_write(
+            vignetted=TelescopeVignetted.UNKNOWN,
+            azimuth=TelescopeVignetted.UNKNOWN,
+            shutter=TelescopeVignetted.UNKNOWN,
+        )
 
     async def report_vignetted_loop(self):
         """Poll MTDome & MTMount topics to report telescopeVignetted event."""
