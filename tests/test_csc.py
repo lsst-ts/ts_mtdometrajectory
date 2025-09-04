@@ -121,6 +121,26 @@ class MTDomeTrajectoryTestCase(
                 enabled_commands=("setFollowingMode",)
             )
 
+    async def test_vignetting_reporting_task(self):
+        """Test whether the vignetting reporting task is running or not."""
+        async with self.make_csc(
+            initial_state=salobj.State.STANDBY,
+            config_dir=TEST_CONFIG_DIR,
+        ):
+            assert self.csc.report_vignetted_task.done()
+
+            await self.remote.cmd_start.set_start(timeout=STD_TIMEOUT)
+            assert not self.csc.report_vignetted_task.done()
+
+            await self.remote.cmd_enable.start(timeout=STD_TIMEOUT)
+            assert not self.csc.report_vignetted_task.done()
+
+            await self.remote.cmd_disable.start(timeout=STD_TIMEOUT)
+            assert not self.csc.report_vignetted_task.done()
+
+            await self.remote.cmd_standby.start(timeout=STD_TIMEOUT)
+            assert self.csc.report_vignetted_task.done()
+
     async def test_simple_follow(self):
         """Test that dome follows telescope using the "simple" algorithm."""
         initial_elevation = 40
