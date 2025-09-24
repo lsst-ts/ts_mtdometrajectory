@@ -8,6 +8,15 @@ Version History
 
 .. towncrier release notes start
 
+v0.15.0 (2025-09-24)
+====================
+
+Performance Enhancement
+-----------------------
+
+- Made vignetting reporting also work when CSC in DISABLED. (`OSW-935 <https://rubinobs.atlassian.net//browse/OSW-935>`_)
+
+
 v0.14.1 (2025-08-12)
 ====================
 
