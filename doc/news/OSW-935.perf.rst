@@ -1,1 +1,0 @@
-Made vignetting reporting also work when CSC in DISABLED.
