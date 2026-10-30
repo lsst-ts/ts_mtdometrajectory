@@ -20,3 +20,4 @@ pytest_session.txt
 .isort.cfg
 .mypy.ini
 towncrier.toml
+.LICENSE.txt
